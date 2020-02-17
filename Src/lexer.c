@@ -1,37 +1,37 @@
 // #include "hashtable.h"
 #include "lexer.h"
-
-#include <ctype.h>
 #include <string.h>
 
 //Twin Buffer Scheme
 char* firstBuffer;
 char* secondBuffer;
 
-int currPtr = 0;
-int currLine = 1;
-int flag = 0;  //denotes the that pointer has reached an final state
-int endOfFile = 0;
+int currPtr = 0;		   //denotes the current pointer for the buffer
+int currLine = 1;         //denotes the current line number
+int flag = 0;  		     //denotes the that pointer has reached an final state
+int endOfFile = 0;       // denotes that we have read all the characters from the file
 HT* hashtable;
 
 
 const char* tokenNameEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY", "START", "END", "DECLARE", "MODULE", "DRIVER", "PROGRAM", "GET_VALUE", "PRINT", 
 	"USE", "WITH", "PARAMETERS", "TRUE", "FALSE", "TAKES", "INPUT", "RETURNS", "AND", "OR", "FOR", "IN", "SWITCH", "CASE", "BREAK",
 	"DEFAULT", "WHILE", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GE", "GT", "EQ", "NE", "DEF", "ENDDEF", "DRIVERDEF", "DRIVERENDDEF",
-	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM"};
+	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR"};
+
 
 FILE* getStream(FILE* fp)
 {
 	//firstBuffer = secondBuffer;
-	int i;
-	for(i = 0; i < strlen(firstBuffer); i++)
-		firstBuffer[i] = '\0';
+
 	int numChar;
-	numChar = fread(firstBuffer,sizeof(char),2048,fp);
+	numChar = fread(firstBuffer,sizeof(char),15,fp);
 
 	if(numChar > 0)
 	{
-		firstBuffer[2048] = '\0';
+		firstBuffer[numChar] = '\0';
+		// for(i = 0; i < strlen(firstBuffer); i++)
+		// 	printf("%c\t", firstBuffer[i]);
+		// printf("\n");
 		return fp;
 	}
 	else
@@ -41,18 +41,12 @@ FILE* getStream(FILE* fp)
 	}
 }
 
-int isValidID(char c)
-{
-	if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <='9') || (c == '_'))
-		return 1;
-	else
-		return 0;
-}
 
-void generateToken(Token* tk,TokenName name, char* str, int linenum)
+void generateToken(Token* tk,TokenName name, char str[], int linenum)
 {
 	tk -> name = name;
-	tk -> lexeme = str;
+	// tk -> lexeme = str;
+	strcpy(tk->lexeme,str);
 	tk -> lineNo = linenum;
 }
 
@@ -70,33 +64,12 @@ Token* getNextToken(FILE* fp)
 		if(flag == 1)
 		{
 			break;
+			printf("break\n");
 		}
 		switch(state)
 		{
 			case 0:
-				if(firstBuffer[currPtr] == '\0')
-				{
-					fp = getStream(fp);
-					currPtr = 0;
-					if(fp == NULL)
-					{
-						endOfFile = 1;
-					}
-					else
-					{
-						state = 0;
-					}
-				}
-				else if(firstBuffer[currPtr] == ' ' || firstBuffer[currPtr] == '\t' || firstBuffer[currPtr] == '\r')
-				{
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '\n')
-				{
-					currLine++;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] >= '0' && firstBuffer[currPtr] <= '9')
+				if(firstBuffer[currPtr] >= '0' && firstBuffer[currPtr] <= '9')
 				{
 					state = 1;
 					strToken[currLexemeLength] = firstBuffer[currPtr];
@@ -110,106 +83,119 @@ Token* getNextToken(FILE* fp)
 					currLexemeLength++;
 					currPtr++;
 				}
-				else if(firstBuffer[currPtr] == '<')
-				{
-					state = 13;
-					strToken[currLexemeLength] = firstBuffer[currPtr];
-					currLexemeLength++;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '>')
-				{
-					state = 17;
-					strToken[currLexemeLength] = firstBuffer[currPtr];
-					currLexemeLength++;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == ':')
-				{
-					state = 21;
-					strToken[currLexemeLength] = firstBuffer[currPtr];
-					currLexemeLength++;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '=')
-				{
-					state = 24;
-					strToken[currLexemeLength] = firstBuffer[currPtr];
-					currLexemeLength++;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '!')
-				{
-					state = 26;
-					strToken[currLexemeLength] = firstBuffer[currPtr];
-					currLexemeLength++;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '*')
-				{
-					state = 28;
-					strToken[currLexemeLength] = firstBuffer[currPtr];
-					currLexemeLength++;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '+')
-				{
-					state = 33;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '-')
-				{
-					state = 34;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '/')
-				{
-					state = 35;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == ';')
-				{
-					state = 36;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == ',')
-				{
-					state = 37;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '[')
-				{
-					state = 38;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == ']')
-				{
-					state = 39;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '(')
-				{
-					state = 40;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == ')')
-				{
-					state = 41;
-					currPtr++;
-				}
-				else if(firstBuffer[currPtr] == '.')
-				{
-					state = 42;
-					strToken[currLexemeLength] = firstBuffer[currPtr];
-					currLexemeLength++;
-					currPtr++;
-				}
 				else
 				{
-					// Unexpected character encountered
-				   //Goto Trap State
-					printf("Invalid Character encountered at state 0\n");
-					currPtr++;
+					switch(firstBuffer[currPtr])
+					{
+						case '\0':
+						{
+							fp = getStream(fp);
+							currPtr = 0;
+							if(fp == NULL)
+							{
+								endOfFile = 1;
+								flag = 1;
+							}
+							else
+							{
+								state = 0;
+							}
+							break;
+						}
+						case ' ' :
+						case '\t':
+						case '\r':
+							currPtr++;
+							break;
+						case '\n':
+							currLine++;
+							currPtr++;
+							break;
+						case '<':
+							state = 13;
+							strToken[currLexemeLength] = firstBuffer[currPtr];
+							currLexemeLength++;
+							currPtr++;
+							break;
+						case '>':
+							state = 17;
+							strToken[currLexemeLength] = firstBuffer[currPtr];
+							currLexemeLength++;
+							currPtr++;
+							break;
+						case ':':
+							state = 21;
+							strToken[currLexemeLength] = firstBuffer[currPtr];
+							currLexemeLength++;
+							currPtr++;
+							break;
+						case '=':
+							state = 24;
+							strToken[currLexemeLength] = firstBuffer[currPtr];
+							currLexemeLength++;
+							currPtr++;
+							break;
+						case '!':
+							state = 26;
+							strToken[currLexemeLength] = firstBuffer[currPtr];
+							currLexemeLength++;
+							currPtr++;
+							break;
+						case '*':
+							state = 28;
+							strToken[currLexemeLength] = firstBuffer[currPtr];
+							currLexemeLength++;
+							currPtr++;
+							break;
+						case '+':
+							state = 33;
+							currPtr++;
+							break;
+						case '-':
+							state = 34;
+							currPtr++;
+							break;
+						case '/':
+							state = 35;
+							currPtr++;
+							break;
+						case ';':
+							state = 36;
+							currPtr++;
+							break;
+						case ',':
+							state = 37;
+							currPtr++;
+							break;
+						case '[':
+							state = 38;
+							currPtr++;
+							break;
+						case ']':
+							state = 39;
+							currPtr++;
+							break;
+						case '(':
+							state = 40;
+							currPtr++;
+							break;
+						case ')':
+							state = 41;
+							currPtr++;
+							break;
+						case '.':
+							state = 42;
+							strToken[currLexemeLength] = firstBuffer[currPtr];
+							currLexemeLength++;
+							currPtr++;		
+							break;
+						default:
+							// printf("Invalid Character encountered at state 0\n");
+							currPtr++;
+							state = 44;
+							break;
+					}
+				
 				}
 				break;
 			case 1:
@@ -235,7 +221,6 @@ Token* getNextToken(FILE* fp)
 
 						if(fp == NULL)
 						{
-							printf("Comes Here\n");
 							endOfFile = 1;
 							flag = 1;
 						}
@@ -296,9 +281,7 @@ Token* getNextToken(FILE* fp)
 					strToken[currLexemeLength] = '\0';
 					generateToken(tk,NUM,strToken,currLine);
 					flag = 1;
-					// printf("Comes Here\n");
 					currPtr--;  //retract twice
-					// printf("%c\n", firstBuffer[currPtr-1]);
 				}
 				else if(firstBuffer[currPtr] == '\0')
 				{
@@ -317,7 +300,8 @@ Token* getNextToken(FILE* fp)
 				else
 				{
 					// Give Lexical error
-					printf("Error at line %d\n", currLine);
+					// printf("Error at line %d\n", currLine);
+					state = 44;
 				}
 				break;
 
@@ -354,7 +338,7 @@ Token* getNextToken(FILE* fp)
 					}
 					else
 					{
-						state = 5;
+						state = 5;   //Retract
 					}
 				}
 				else if(firstBuffer[currPtr] == 'e' || firstBuffer[currPtr] == 'E')
@@ -415,14 +399,15 @@ Token* getNextToken(FILE* fp)
 					}
 					else
 					{
-						state = 6;
+						state = 6;      //Retract
 					}
 				}
 				else
 				{
 					//Send to trap state 
 					//Generate error
-					printf("Error at line %d\n", currLine);
+					// printf("Error at line %d\n", currLine);
+					state = 44;	
 				}
 				break;
 			case 7:
@@ -451,7 +436,8 @@ Token* getNextToken(FILE* fp)
 				{
 					//Send to trap state 
 					//Generate error	
-					printf("Error at line %d\n", currLine);
+					// printf("Error at line %d\n", currLine);
+					state = 44;
 				}
 				break;
 
@@ -509,9 +495,9 @@ Token* getNextToken(FILE* fp)
 
 			//Following part handles the keywords and identifiers
 			case 11:
-				if(isValidID(firstBuffer[currPtr]))
+				if((firstBuffer[currPtr] >= 'a' && firstBuffer[currPtr] <= 'z') || (firstBuffer[currPtr] >= 'A' && firstBuffer[currPtr] <= 'Z') || (firstBuffer[currPtr] >= '0' && firstBuffer[currPtr] <='9') || (firstBuffer[currPtr] == '_'))
 				{
-					while(isValidID(firstBuffer[currPtr]))
+					while((firstBuffer[currPtr] >= 'a' && firstBuffer[currPtr] <= 'z') || (firstBuffer[currPtr] >= 'A' && firstBuffer[currPtr] <= 'Z') || (firstBuffer[currPtr] >= '0' && firstBuffer[currPtr] <='9') || (firstBuffer[currPtr] == '_'))
 					{
 						strToken[currLexemeLength] = firstBuffer[currPtr];
 						currPtr++;
@@ -521,10 +507,11 @@ Token* getNextToken(FILE* fp)
 					{
 						fp = getStream(fp);
 						currPtr = 0;
-
+						
 						if(fp == NULL)
 						{
 							endOfFile = 1;
+							state = 12;
 						}
 						else
 						{
@@ -542,6 +529,7 @@ Token* getNextToken(FILE* fp)
 					if(fp == NULL)
 					{
 						endOfFile = 1;
+						state = 12;
 					}
 					else
 					{
@@ -550,7 +538,7 @@ Token* getNextToken(FILE* fp)
 				}
 				else
 				{
-					state = 12;  // Retract
+					state = 12;    // Retract
 				}
 				break;
 
@@ -558,9 +546,9 @@ Token* getNextToken(FILE* fp)
 				strToken[currLexemeLength] = '\0';
 				if(strlen(strToken) > 20)
 				{
-					printf("Error: %d, length of identifier is greater than 20\n", currLine);
+					// printf("Error: %d, length of identifier is greater than 20\n", currLine);
 					flag = 1;
-					break;
+					state = 44;
 				}
 				else
 				{
@@ -688,6 +676,21 @@ Token* getNextToken(FILE* fp)
 					currPtr++;
 					state = 23;
 				}
+				else if(firstBuffer[currPtr] == '\0')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+					}
+					else
+					{
+						state = 21;
+					}
+				}
+
 				else
 				{
 					state = 22; // Retract
@@ -714,6 +717,7 @@ Token* getNextToken(FILE* fp)
 				else
 				{
 					//Generate Error Unexpected character
+					state = 44;
 				}
 				break;
 			case 25:
@@ -732,6 +736,7 @@ Token* getNextToken(FILE* fp)
 				else
 				{
 					//Generate Error Unexpected character
+					state = 44;
 				}
 				break;
 			case 27:
@@ -747,6 +752,21 @@ Token* getNextToken(FILE* fp)
 					currLexemeLength++;
 					currPtr++;
 				}
+				else if(firstBuffer[currPtr] == '\0')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 32;
+					}
+					else
+					{
+						state = 28;
+					}
+				}
 				else
 				{
 					state = 32; //Retract
@@ -757,12 +777,26 @@ Token* getNextToken(FILE* fp)
 				{
 					state = 30;
 					currPtr++;
-					// Store or not
 				}
 				else if(firstBuffer[currPtr] == '\n')
 				{
 					currLine++;
 					currPtr++;
+				}
+				else if(firstBuffer[currPtr] == '\0')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 44;
+					}
+					else
+					{
+						state = 29;
+					}
 				}
 				else
 				{
@@ -779,6 +813,21 @@ Token* getNextToken(FILE* fp)
 				{
 					currLine++;
 					currPtr++;
+				}
+				else if(firstBuffer[currPtr] == '\0')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 44;
+					}
+					else
+					{
+						state = 30;
+					}
 				}
 				else
 				{
@@ -851,12 +900,17 @@ Token* getNextToken(FILE* fp)
 				else
 				{
 					//Generate error
+					state = 44;
 				}
+				break;
 			case 43:
 				generateToken(tk,RANGEOP,"..",currLine);
 				flag = 1;
 				break;
 			case 44:
+				strToken[currLexemeLength] = '\0';
+				generateToken(tk,ERROR,strToken,currLine);
+				flag = 1;
 				break;
 		}
 	}
@@ -865,6 +919,7 @@ Token* getNextToken(FILE* fp)
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 HT* generate_hashtable(int s){
    HT* hash=(HT*)malloc(s*sizeof(HT));
    hash->size=s;
@@ -1010,9 +1065,10 @@ char** populate_keywords(char* filename){
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void printTokens(char * testCaseFile)
 {
-	FILE *fp = fopen(testCaseFile,"r");
+	FILE* fp = fopen(testCaseFile,"r");
 	if(fp == NULL)
 	{
 		printf("Error in opening file\n");
@@ -1021,13 +1077,9 @@ void printTokens(char * testCaseFile)
 	{
 		printf("File opened with success\n");
 	}
-	firstBuffer = (char*)malloc(sizeof(char)*2049);
+	firstBuffer = (char*)malloc(sizeof(char)*15);
 	fp = getStream(fp);
-	fclose(fp);
-	// for(int i = 0; i < strlen(firstBuffer); i++)
-	// {
-	// 	printf("%c ", firstBuffer[i]);
-	// }
+
 
 	//Construct the hashtable
 	char** keys = populate_keywords("keywords.txt");
@@ -1036,17 +1088,22 @@ void printTokens(char * testCaseFile)
     hashtable = make_array(hashtable,keys,30);
 
     Token* tk = (Token*)getNextToken(fp);
-    int n = 200;
-    while(n--)
+    while(1)
     {
+
     	if(tk->name != COMMENTMARK)
     		printf("Line: %d\t TokenName: %s\t  lexeme: %s\n",tk->lineNo,tokenNameEnumToString[tk->name],tk->lexeme);
-    	tk = getNextToken(fp);
+    	if(endOfFile == 1)
+    	{
+    		// printf("%s\n", tokenNameEnumToString[tk->name]);
+    		break;
+    	}
+		tk = getNextToken(fp);
     }
     printf("Finished\n");
 }
 
 int main()
 {
-	printTokens("testcase8.txt");
+	printTokens("sample.txt");
 }
