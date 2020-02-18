@@ -1082,7 +1082,7 @@ void printTokens(char * testCaseFile)
 
 
 	//Construct the hashtable
-	char** keys = populate_keywords("keywords.txt");
+	char** keys = populate_keywords("../data/keywords.txt");
     
     hashtable = generate_hashtable(41);
     hashtable = make_array(hashtable,keys,30);
@@ -1105,5 +1105,5 @@ void printTokens(char * testCaseFile)
 
 int main()
 {
-	printTokens("sample.txt");
+	printTokens("../data/sample.txt");
 }
