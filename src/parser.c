@@ -6,19 +6,19 @@ void compute_first_and_follow_sets(grammar G, firstandfollow F)
 
 }
 
-createParseTable(FirstAndFollow F, Table T)
+void createParseTable(FirstAndFollow F, Table T)
 {
 
 }
 
 
-parseInputSourceCode(char *testcaseFile, Table T)
+void parseInputSourceCode(char *testcaseFile, Table T)
 {
 
 }
 
 
-printParseTree(parseTree PT, char *outfile)
+void printParseTree(parseTree PT, char *outfile)
 {
 	
 }
