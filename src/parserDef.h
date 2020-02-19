@@ -6,25 +6,40 @@
 
 // pt[NT][T] <- char * 
 
+typedef enum 
+{
+	program,moduleDeclarations,moduleDeclaration,otherModules, driverModule, module,
+	ret, input_plist, input_plist_dash, output_plist, output_plist_dash, dataType, range_array,
+	type, moduleDef, statements, statement, ioStmt, var, var_id_num, boolConstt, whichId,
+	simpleStmt, assignmentStmt, whichStmt, lvalueIDStmt, lvalueARRStmt, index, moduleReuseStmt,
+	optional, idList, idList_dash, expression, unaryOrExpr, arithmeticOrBooleanExpr, anyTerm,
+	arithmeticExpr_dash, bool, arithmeticExpr, arithmeticExpr_recur, term, term_dash, factor, 
+	op_plus_minus, op_mul_div, logicalOp, relationalOp, declareStmt, conditionalStmt, caseStmts,
+	caseStmt, value, default, iterativeStmt, range 
+}NonTerminal;
+
 char *ParseTable[100][100];
 
 // grammar --------------------------------------------
-typedef struct RHS_
+typedef struct RHSNode
 {
 	Symbol s;
-	struct RHS_ * next;
-}RHS;
+	Type t;
+	struct RHSNode * next;
+}RHSNode;
 
 typedef struct LHS_
 {
-	Symbol s;
-	RHS *first;
-	struct LHS_ * next;
-}LHS;
+	NonTerminal nt;
+	int num_rules;
+
+	RHSNode **rules;
+}LHSNode;
 
 typedef struct
 {
-	LHS* firstrule;
+	int num_rules;
+	LHSNode ** non_terminals;
 }Grammar;
 
 // first and follow -----------------------------------
@@ -48,6 +63,7 @@ typedef struct
 // mapping table -----------------------------------------------
 typedef enum 
 {
+	
 	terminal,
 	nonterminal
 }Type;
