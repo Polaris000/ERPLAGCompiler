@@ -36,7 +36,7 @@ Grammar* make_table(char* filename, Grammar* table){
     FILE* ptr=fopen(filename,"r");
 
     char* buffer=(char*) malloc(sizeof(char)*256);
-   
+
     while(fgets(buffer,256,ptr)!=NULL)
     {
         int length = strlen(buffer);
@@ -70,7 +70,7 @@ Grammar* make_table(char* filename, Grammar* table){
                     table->non_terminals[j].rules[table->non_terminals[j].num_rules-1]=(RHSNode*) malloc(sizeof(RHSNode));
                     table->non_terminals[j].rules[table->non_terminals[j].num_rules-1]->next=NULL;
                     traverse=table->non_terminals[j].rules[table->non_terminals[j].num_rules-1];
-                
+
                     f=1;
                     flag=1;
                 }
@@ -80,8 +80,8 @@ Grammar* make_table(char* filename, Grammar* table){
                     i++;
             }  // Above condition is triggered for the leftmost non-terminal of a rule
 
-            else if(f==1 && flag==0){ 
-                
+            else if(f==1 && flag==0){
+
                 if(buffer[i]=='<'){
                     i++;
                     start=i;
@@ -93,7 +93,7 @@ Grammar* make_table(char* filename, Grammar* table){
                     table->non_terminals[j].rules[table->non_terminals[j].num_rules-1]=(RHSNode*) malloc(sizeof(RHSNode));
                     table->non_terminals[j].rules[table->non_terminals[j].num_rules-1]->next=NULL;
                     traverse=table->non_terminals[j].rules[table->non_terminals[j].num_rules-1];
-                                       
+
 
                     for(k = 0; k < NON_TERMINALS; k++)
                     {
@@ -113,12 +113,12 @@ Grammar* make_table(char* filename, Grammar* table){
                     flag=1;
                 }
                 else if(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')) || buffer[i] == '_'){
-                    
+
                     start=i;
                     while(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')) || buffer[i] == '_')
                         i++;
                     char* token=substring(buffer,start,i);
-            
+
 
                     table->non_terminals[j].num_rules+=1;
                     table->non_terminals[j].rules=(RHSNode**) realloc(table->non_terminals[j].rules,sizeof(RHSNode*)*(table->non_terminals[j].num_rules));
@@ -151,8 +151,8 @@ Grammar* make_table(char* filename, Grammar* table){
                 else
                     i++;
             }
-            else if(f==1 && flag==1){ 
-                
+            else if(f==1 && flag==1){
+
                 if(buffer[i]=='<'){
                     i++;
                     start=i;
@@ -175,9 +175,9 @@ Grammar* make_table(char* filename, Grammar* table){
                     traverse=traverse->next;
                     traverse->next=NULL;
                 }
-                
+
                 else if(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')) || buffer[i] == '_'){
-                    
+
                     start=i;
                     while(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')) || buffer[i] == '_')
                         i++;
@@ -199,7 +199,7 @@ Grammar* make_table(char* filename, Grammar* table){
                     traverse=traverse->next;
 
                     traverse->next=NULL;
-                    
+
                 }
                 else if(buffer[i]=='|')
                 {
@@ -219,7 +219,7 @@ Grammar* make_table(char* filename, Grammar* table){
         // free(buffer);
         // buffer=(char*) malloc(sizeof(char)*100);
     }
-    return table;    
+    return table;
 }
 
 
@@ -230,24 +230,24 @@ void printTable(Grammar* gm)
     {
         // printf("%s\n", gm->non_terminals[i].start);
         printf("%s\n", nonTerminalEnumToString[gm -> non_terminals[i].nt]);
-        
+
         for(int j = 0; j < gm->non_terminals[i].num_rules; j++)
         {
             RHSNode* traverse = gm -> non_terminals[i].rules[j];
             printf("Rule %d:\t",j+1);
             while(traverse -> next != NULL)
             {
-                // printf("%s\t", traverse->token); 
+                // printf("%s\t", traverse->token);
                 if(traverse -> type == terminal)
                     printf("%s\t", TerminalEnumToString[traverse -> s.t]);
                 else
-                    printf("%s\t", nonTerminalEnumToString[traverse -> s.nt]); 
+                    printf("%s\t", nonTerminalEnumToString[traverse -> s.nt]);
                 traverse  = traverse -> next;
             }
-            printf("\n");    
+            printf("\n");
         }
         printf("\n");
-        
+
     }
 }
 
@@ -298,17 +298,17 @@ void printTable(Grammar* gm)
 //                 if(r -> type == terminal)
 //                 {
 //                     first[G -> non_terminals[i] -> nt] = first[G -> non_terminals[i] -> nt] | TokenName[r -> s -> t];
-//                 }    
+//                 }
 //                 else
 //                 {
 //                     first[G -> non_terminals[i] -> nt] = first[G -> non_terminals[i] -> nt] | first[r -> s -> nt];
 //                 }
 //             }
-        
-//         }  
-//         loop--; 
+
+//         }
+//         loop--;
 //     }
-    
+
 //     return first;
 // }
 
@@ -316,15 +316,75 @@ void printTable(Grammar* gm)
 // void setBit(int* firstSet, Terminal t)
 // {
 //     int k = (int) t;
-//     int i = k / 32;           
-//     int pos = k % 32;          
+//     int i = k / 32;
+//     int pos = k % 32;
 
-//     unsigned int flag = 1;  
+//     unsigned int flag = 1;
 
 //     flag = flag << pos;     // (shifted k positions)
 
 //     firstSet[i] = firstSet[i] | flag;      // Set the bit at the k-th position in firstSet[i]
 // }
+
+int *arr getsetbits(int *x)
+{
+
+}
+
+int has(int *arr, int length, int term)
+{
+    for (int i = length - 1; i > -1; i --)
+        if (arr[i] == term)
+            return 1;
+
+    return 0;
+}
+
+ParseTable* populateParseTable(FirstandFollow*F, Grammar *G, ParseTable * pt)
+{
+    for (int i = 0; i < NON_TERMINALS, i ++)
+    {
+        LHSNode *lhs = G -> non_terminals[i];
+        for (int j = 0; j < lhs -> num_rules; j ++)
+        {
+            RHSNode *rhs = lhs -> rules[j];
+
+            int setbits[] = getsetbits(First[rhs -> s . nt]);
+            int num_terminals = sizeof(setbits) / sizeof(int);
+
+            // case1: termianl
+            if (rhs -> type == terminal)
+            {
+                *(*(pt + i) + j) = j;
+                continue;
+            }
+
+            // case2: $ and epsilon
+        
+            if (has(setbits, num_terminals, EPSILON) && has(setbits_follow, num_terminals, DOLLAR))
+            {
+                    int setbits_follow = getsetbits(Follow[lhs -> nt]);
+                    for (int k = 0; k < setbits_follow; k ++)
+                    {
+                        *(*(pt + i) + DOLLAR) = j;
+                    }
+            }
+
+            // case3: epsilon
+			if (has(setbits, num_terminals, EPSILON))
+			{
+					int setbits_follow = getsetbits(Follow[lhs -> nt]);
+                    for (int k = 0; k < setbits_follow; k ++)
+                    {
+                        *(*(pt + i) + setbits[k]) = j;
+                    }
+			}
+        }
+    }
+    return pt;
+}
+
+
 
 int main(){
 

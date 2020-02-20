@@ -58,7 +58,7 @@ typedef union symbol
 typedef enum 
 {
     
-    terminal,
+ 	terminal,
     nonterminal
 }Type;
 
@@ -124,7 +124,7 @@ typedef struct Parse_
 }
 
 typedef struct Parse_[NON_TERMINALS][TERMINALS] ParseTable;
-// g -> non_terminals [i] -> rules [j] RHSNode*
+// g -> non_terminals [i] -> rules [ruleno] RHSNode*
 
 
 // mapping table -----------------------------------------------
