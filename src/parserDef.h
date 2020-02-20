@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #ifndef _parserdef_
 #define _parserdef_
@@ -13,7 +14,7 @@
 // pt[NT][T] <- char * 
 
 #define NON_TERMINALS 55
-#define TERMINALS 58
+#define TERMINALS 60
 
 typedef enum 
 {
@@ -31,7 +32,7 @@ typedef enum {
     INTEGER, REAL, BOOLEAN, OF, ARRAY, START, END, DECLARE, MODULE, DRIVER, PROGRAM, GET_VALUE, PRINT, 
     USE, WITH, PARAMETERS, TRUE, FALSE, TAKES, INPUT, RETURNS, AND, OR, FOR, IN, SWITCH, CASE, BREAK,
     DEFAULT, WHILE, PLUS, MINUS, MUL, DIV, LT, LE, GE, GT, EQ, NE, DEF, ENDDEF, DRIVERDEF, DRIVERENDDEF,
-    COLON, RANGEOP, SEMICOL, COMMA, ASSIGNOP, SQBO, SQBC, BO, BC, COMMENTMARK,ID,NUM,RNUM,ERROR
+    COLON, RANGEOP, SEMICOL, COMMA, ASSIGNOP, SQBO, SQBC, BO, BC, COMMENTMARK,ID,NUM,RNUM,ERROR,EPSILON,DOLLAR
 }Terminal;
 
 const char* nonTerminalEnumToString[] = {
@@ -48,7 +49,7 @@ const char* nonTerminalEnumToString[] = {
 const char* TerminalEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY", "START", "END", "DECLARE", "MODULE", "DRIVER", "PROGRAM", "GET_VALUE", "PRINT", 
 	"USE", "WITH", "PARAMETERS", "TRUE", "FALSE", "TAKES", "INPUT", "RETURNS", "AND", "OR", "FOR", "IN", "SWITCH", "CASE", "BREAK",
 	"DEFAULT", "WHILE", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GE", "GT", "EQ", "NE", "DEF", "ENDDEF", "DRIVERDEF", "DRIVERENDDEF",
-	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR"};
+	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR","e","$"};
 
 
 // Following structures are used for representing the grammar
@@ -69,7 +70,6 @@ struct RHSNode
 {
     Symbol s;
     Type type;
-    char* token;
     struct RHSNode * next;
 };
 
@@ -79,7 +79,6 @@ typedef struct
 {
     NonTerminal nt;
     int num_rules;
-    char* start;
     RHSNode **rules;
 }LHSNode;
 
@@ -97,15 +96,15 @@ char *ParseTable[100][100];
 
 struct First_
 {
-	int *firstset;
+	int *firstSet;
 };
-typedef struct First_ [100] First;
+typedef struct First_ [NON_TERMINALS] First;
 
 struct Follow_
 {
-	int *followset;
+	int *followSet;
 };
-typedef struct Follow_ [100] Follow;
+typedef struct Follow_ [NON_TERMINALS] Follow;
 
 typedef struct
 {

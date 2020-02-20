@@ -3,82 +3,7 @@
 // #include <string.h>
 #include "parser.h"
 
-// #define NON_TERMINALS 55
-// #define TERMINALS 58
 
-// const char* TerminalEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY", "START", "END", "DECLARE", "MODULE", "DRIVER", "PROGRAM", "GET_VALUE", "PRINT", 
-// 	"USE", "WITH", "PARAMETERS", "TRUE", "FALSE", "TAKES", "INPUT", "RETURNS", "AND", "OR", "FOR", "IN", "SWITCH", "CASE", "BREAK",
-// 	"DEFAULT", "WHILE", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GE", "GT", "EQ", "NE", "DEF", "ENDDEF", "DRIVERDEF", "DRIVERENDDEF",
-// 	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR"};
-
-
-// typedef enum {
-//     INTEGER, REAL, BOOLEAN, OF, ARRAY, START, END, DECLARE, MODULE, DRIVER, PROGRAM, GET_VALUE, PRINT, 
-//     USE, WITH, PARAMETERS, TRUE, FALSE, TAKES, INPUT, RETURNS, AND, OR, FOR, IN, SWITCH, CASE, BREAK,
-//     DEFAULT, WHILE, PLUS, MINUS, MUL, DIV, LT, LE, GE, GT, EQ, NE, DEF, ENDDEF, DRIVERDEF, DRIVERENDDEF,
-//     COLON, RANGEOP, SEMICOL, COMMA, ASSIGNOP, SQBO, SQBC, BO, BC, COMMENTMARK,ID,NUM,RNUM,ERROR
-// }Terminal;
-
-
-// typedef enum 
-// {
-//     program,moduleDeclarations,moduleDeclaration,otherModules, driverModule, module,
-//     ret, input_plist, input_plist_dash, output_plist, output_plist_dash, dataType, range_array,
-//     type, moduleDef, statements, statement, ioStmt, var, var_id_num, boolConstt, whichId,
-//     simpleStmt, assignmentStmt, whichStmt, lvalueIDStmt, lvalueARRStmt, Index, moduleReuseStmt,
-//     optional, idList, idList_dash, expression, unaryOrExpr, arithmeticOrBooleanExpr, anyTerm,
-//     arithmeticExpr_dash, bool, arithmeticExpr, arithmeticExpr_recur, term, term_dash, factor, 
-//     op_plus_minus, op_mul_div, logicalOp, relationalOp, declareStmt, conditionalStmt, caseStmts,
-//     caseStmt, value,Default,iterativeStmt, range 
-// } NonTerminal;
-
-// const char* nonTerminalEnumToString[] = {
-//     "program","moduleDeclarations","moduleDeclaration","otherModules", "driverModule", "module",
-//     "ret", "input_plist", "input_plist_dash", "output_plist", "output_plist_dash", "dataType", "range_array",
-//     "type", "moduleDef", "statements", "statement", "ioStmt", "var", "var_id_num", "boolConstt", "whichId",
-//     "simpleStmt", "assignmentStmt", "whichStmt", "lvalueIDStmt", "lvalueARRStmt", "index", "moduleReuseStmt",
-//     "optional", "idList", "idList_dash", "expression", "unaryOrExpr", "arithmeticOrBooleanExpr", "anyTerm",
-//     "arithmeticExpr_dash", "bool", "arithmeticExpr", "arithmeticExpr_recur", "term", "term_dash", "factor", 
-//     "op_plus_minus", "op_mul_div", "logicalOp", "relationalOp", "declareStmt", "conditionalStmt", "caseStmts",
-//     "caseStmt", "value", "default", "iterativeStmt", "range"
-// };
-
-// typedef union symbol
-// {
-//     Terminal t;
-//     NonTerminal nt;
-// }Symbol;
-
-// typedef enum 
-// {
-    
-//     terminal,
-//     nonterminal
-// }Type;
-
-// struct RHSNode
-// {
-//     Symbol s;
-//     Type type;
-//     char* token;
-//     struct RHSNode * next;
-// };
-
-// typedef struct RHSNode RHSNode;
-
-// typedef struct
-// {
-//     NonTerminal nt;
-//     int num_rules;
-//     char* start;
-//     RHSNode **rules;
-// }LHSNode;
-
-// typedef struct
-// {
-//     int num_non_terminals;
-//     LHSNode * non_terminals;
-// }Grammar;
 
 
 char* substring(const char *src, int m, int n)
@@ -139,7 +64,7 @@ Grammar* make_table(char* filename, Grammar* table){
                         }
                     }
                     table->non_terminals[j].nt = (NonTerminal)j;
-                    table->non_terminals[j].start = token;
+                    // table->non_terminals[j].start = token;
                     table->non_terminals[j].num_rules += 1;
                     table->non_terminals[j].rules=(RHSNode**) realloc(table->non_terminals[j].rules,sizeof(RHSNode*)*(table->non_terminals[j].num_rules));
                     table->non_terminals[j].rules[table->non_terminals[j].num_rules-1]=(RHSNode*) malloc(sizeof(RHSNode));
@@ -180,17 +105,17 @@ Grammar* make_table(char* filename, Grammar* table){
 
                     traverse -> type = nonterminal;                       // Assign the token an enum of type non-terminal
                     traverse -> s.nt = (NonTerminal)k;                    // Assign the value of non-terminal
-                    traverse -> token = token;
+                    // traverse -> token = token;
 
                     traverse -> next = (RHSNode*) malloc(sizeof(RHSNode));
                     traverse = traverse -> next;
                     traverse -> next = NULL;
                     flag=1;
                 }
-                else if(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z'))){
+                else if(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')) || buffer[i] == '_'){
                     
                     start=i;
-                    while(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')))
+                    while(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')) || buffer[i] == '_')
                         i++;
                     char* token=substring(buffer,start,i);
             
@@ -212,7 +137,7 @@ Grammar* make_table(char* filename, Grammar* table){
 
                     traverse -> type = terminal;                       // Assign the token an enum of type non-terminal
                     traverse -> s.t = (Terminal)k;                    // Assign the value of non-terminal
-                    traverse -> token = token;
+                    // traverse -> token = token;
 
 
                     traverse -> next = (RHSNode*) malloc(sizeof(RHSNode));
@@ -242,7 +167,7 @@ Grammar* make_table(char* filename, Grammar* table){
                         }
                     }
 
-                    traverse -> token = token;
+                    // traverse -> token = token;
                     traverse -> type = nonterminal;                       // Assign the token an enum of type non-terminal
                     traverse -> s.nt = (NonTerminal)k;                    // Assign the value of non-terminal
 
@@ -251,10 +176,10 @@ Grammar* make_table(char* filename, Grammar* table){
                     traverse->next=NULL;
                 }
                 
-                else if(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z'))){
+                else if(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')) || buffer[i] == '_'){
                     
                     start=i;
-                    while(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')))
+                    while(((buffer[i]>='a')&&(buffer[i]<='z'))||((buffer[i]>='A')&&(buffer[i]<='Z')) || buffer[i] == '_')
                         i++;
                     char* token=substring(buffer,start,i);
 
@@ -266,7 +191,7 @@ Grammar* make_table(char* filename, Grammar* table){
                         }
                     }
 
-                    traverse->token=token;
+                    // traverse->token=token;
                     traverse -> type = terminal;                       // Assign the token an enum of type non-terminal
                     traverse -> s.nt = (Terminal)k;                    // Assign the value of non-terminal
 
@@ -303,7 +228,8 @@ void printTable(Grammar* gm)
     printf("Printing the structure------------------------------------------------------------------------\n");
     for(int i = 0; i < NON_TERMINALS; i++)
     {
-        printf("%s\n", gm->non_terminals[i].start);
+        // printf("%s\n", gm->non_terminals[i].start);
+        printf("%s\n", nonTerminalEnumToString[gm -> non_terminals[i].nt]);
         
         for(int j = 0; j < gm->non_terminals[i].num_rules; j++)
         {
@@ -311,7 +237,11 @@ void printTable(Grammar* gm)
             printf("Rule %d:\t",j+1);
             while(traverse -> next != NULL)
             {
-                printf("%s\t", traverse->token);  
+                // printf("%s\t", traverse->token); 
+                if(traverse -> type == terminal)
+                    printf("%s\t", TerminalEnumToString[traverse -> s.t]);
+                else
+                    printf("%s\t", nonTerminalEnumToString[traverse -> s.nt]); 
                 traverse  = traverse -> next;
             }
             printf("\n");    
@@ -322,47 +252,79 @@ void printTable(Grammar* gm)
 }
 
 
+//------------------------------------------------------------------------------------------------------------------------------------
+// Following part s deal with the first and follow sets computation
 
-First* computeFirst(Grammar* G, First* first)
-{
-    int loop = 2;
-    while(loop > 0)
-    {
-        for(int i = 0; i < G -> num_non_terminals; i++)
-        {
-            for(int j = 0; j < G -> non_terminals[i].num_rules; j++)
-            {
-                RHSNode* r = G -> non_terminals[i] -> rules[j];
-                if(r -> type == terminal)
-                {
-                    first[G -> non_terminals[i] -> nt] = first[G -> non_terminals[i] -> nt] | TokenName[r -> s -> t];
-                }    
-                else
-                {
-                    first[G -> non_terminals[i] -> nt] = first[G -> non_terminals[i] -> nt] | first[r -> s -> nt];
-                }
-            }
+
+// FirstAndFollow* initializeFirstFollow()
+// {
+//     FirstAndFollow* first_follow = (FirstAndFollow*) malloc(sizeof(FirstAndFollow));
+
+//     for(int i = 0; i < NON_TERMINALS; i++)
+//     {
+//         first_follow -> first[i] = (int *)malloc(sizeof(int)*ceil(TERMINALS/32));
+//         first_follow -> follow[i] = (int *)malloc(sizeof(int)*ceil(TERMINALS/32));
+//     }
+//     return first_follow;
+// }
+
+// void ComputeFirstAndFollowSets (Grammar* G, FirstAndFollow*  F)
+// {
+//     for(int i = 0; i < NON_TERMINALS; i++)
+//     {
+//         computeFirst(G, F -> first[i], G -> non_terminals[i] -> nt);
+//     }
+//     F -> follow = computeFollow(G, F -> follow);
+// }
+
+
+// Follow* computeFollow(Grammar* G, Follow* follow )
+// {
+//     // compute follow
+//     return follow;
+// }
+
+
+// First* computeFirst(Grammar* G, int* first, NonTerminal nt)
+// {
+//     int loop = 2;
+//     while(loop > 0)
+//     {
+//         for(int i = 0; i < G -> num_non_terminals; i++)
+//         {
+//             for(int j = 0; j < G -> non_terminals[i].num_rules; j++)
+//             {
+//                 RHSNode* r = G -> non_terminals[i] -> rules[j];
+//                 if(r -> type == terminal)
+//                 {
+//                     first[G -> non_terminals[i] -> nt] = first[G -> non_terminals[i] -> nt] | TokenName[r -> s -> t];
+//                 }    
+//                 else
+//                 {
+//                     first[G -> non_terminals[i] -> nt] = first[G -> non_terminals[i] -> nt] | first[r -> s -> nt];
+//                 }
+//             }
         
-        }  
-        loop--; 
-    }
+//         }  
+//         loop--; 
+//     }
     
-    return first;
-}
+//     return first;
+// }
 
 
-Follow* computeFollow(Grammar* G, Follow* follow )
-{
-    // compute follow
-    return follow;
-}
+// void setBit(int* firstSet, Terminal t)
+// {
+//     int k = (int) t;
+//     int i = k / 32;           
+//     int pos = k % 32;          
 
+//     unsigned int flag = 1;  
 
-void ComputeFirstAndFollowSets (Grammar* G, FirstAndFollow*  F)
-{
-        F -> first =  computeFirst(G, F -> first);
-        F -> follow = computeFollow(G, F -> follow);
-}
+//     flag = flag << pos;     // (shifted k positions)
+
+//     firstSet[i] = firstSet[i] | flag;      // Set the bit at the k-th position in firstSet[i]
+// }
 
 int main(){
 
