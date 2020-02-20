@@ -21,6 +21,8 @@ typedef enum
 char *ParseTable[100][100];
 
 // grammar --------------------------------------------
+
+typedef enum {terminal, nonterminal} Type;
 typedef struct RHSNode
 {
 	Symbol s;
@@ -43,15 +45,17 @@ typedef struct
 }Grammar;
 
 // first and follow -----------------------------------
-typedef struct
+struct First_
 {
+	int *firstset;
+};
+typedef struct First_ [100] First;
 
-}First;
-
-typedef struct
+struct Follow_
 {
-
-}Follow;
+	int *followset;
+};
+typedef struct Follow_ [100] Follow;
 
 typedef struct
 {
@@ -60,27 +64,6 @@ typedef struct
 
 }FirstAndFollow;
 
-// mapping table -----------------------------------------------
-typedef enum 
-{
-	
-	terminal,
-	nonterminal
-}Type;
-
-typedef struct
-{
-	char str[100];
-	Symbol s;
-	Type t;
-}table;
-
-typedef Table table[10]; // set size appropriately
-
-typedef union{
-	int intValue;
-	float fValue;
-}value;
 
 // parse tree ------------------------------------------
 typedef struct
