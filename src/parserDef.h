@@ -5,13 +5,7 @@
 
 #ifndef _parserdef_
 #define _parserdef_
-// parse table ----------------------------------------
-//		t1	t2	t3	$
-// Nt1
-// NT2
-// NT3
 
-// pt[NT][T] <- char * 
 
 #define NON_TERMINALS 55
 #define TERMINALS 60
@@ -51,6 +45,8 @@ const char* TerminalEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY
 	"DEFAULT", "WHILE", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GE", "GT", "EQ", "NE", "DEF", "ENDDEF", "DRIVERDEF", "DRIVERENDDEF",
 	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR","e","$"};
 
+
+// parse table
 
 // Following structures are used for representing the grammar
 typedef union symbol
@@ -112,6 +108,24 @@ typedef struct
 	Follow follow;
 
 }FirstAndFollow;
+
+
+// parse table ----------------------------------------
+//		t1	t2	t3	$
+// Nt1
+// NT2
+// NT3
+
+
+typedef struct Parse_
+{
+	int rule_no;
+
+}
+
+typedef struct Parse_[NON_TERMINALS][TERMINALS] ParseTable;
+// g -> non_terminals [i] -> rules [j] RHSNode*
+
 
 // mapping table -----------------------------------------------
 
