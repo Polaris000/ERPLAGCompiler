@@ -1,7 +1,11 @@
+
 #include "parserDef.h"
 
 
-void compute_first_and_follow_sets(grammar G, FirstAndFollow F);
-void createParseTable(FirstAndFollow F, Table T);
-ParseTree* parseInputSourceCode(char *testcaseFile, Table T);
-void printParseTree(ParseTree PT, char *outfile);
+char* substring(const char *src, int m, int n);
+Grammar* initialize();
+Grammar* make_table(char* filename, Grammar* table);
+void printTable(Grammar* gm);
+First* computeFirst(Grammar* G, First* first);
+Follow* computeFollow(Grammar* G, Follow* follow );
+void ComputeFirstAndFollowSets (Grammar* G, FirstAndFollow*  F);
