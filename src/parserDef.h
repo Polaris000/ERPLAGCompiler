@@ -2,10 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <ctype.h>
 
 #ifndef _parserdef_
 #define _parserdef_
+// parse table ----------------------------------------
+//		t1	t2	t3	$
+// Nt1
+// NT2
+// NT3
 
+// pt[NT][T] <- char * 
 
 #define NON_TERMINALS 55
 #define TERMINALS 60
@@ -26,10 +33,10 @@ typedef enum {
     INTEGER, REAL, BOOLEAN, OF, ARRAY, START, END, DECLARE, MODULE, DRIVER, PROGRAM, GET_VALUE, PRINT, 
     USE, WITH, PARAMETERS, TRUE, FALSE, TAKES, INPUT, RETURNS, AND, OR, FOR, IN, SWITCH, CASE, BREAK,
     DEFAULT, WHILE, PLUS, MINUS, MUL, DIV, LT, LE, GE, GT, EQ, NE, DEF, ENDDEF, DRIVERDEF, DRIVERENDDEF,
-    COLON, RANGEOP, SEMICOL, COMMA, ASSIGNOP, SQBO, SQBC, BO, BC, COMMENTMARK,ID,NUM,RNUM,ERROR,EPSILON,DOLLAR
+    COLON, RANGEOP, SEMICOL, COMMA, ASSIGNOP, SQBO, SQBC, BO, BC, COMMENTMARK,ID,NUM,RNUM,ERROR,DOLLAR,EPSILON
 }Terminal;
 
-const char* nonTerminalEnumToString[] = {
+char* nonTerminalEnumToString[] = {
     "program","moduleDeclarations","moduleDeclaration","otherModules", "driverModule", "module",
     "ret", "input_plist", "input_plist_dash", "output_plist", "output_plist_dash", "dataType", "range_array",
     "type", "moduleDef", "statements", "statement", "ioStmt", "var", "var_id_num", "boolConstt", "whichId",
@@ -40,13 +47,11 @@ const char* nonTerminalEnumToString[] = {
     "caseStmt", "value", "default", "iterativeStmt", "range"
 };
 
-const char* TerminalEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY", "START", "END", "DECLARE", "MODULE", "DRIVER", "PROGRAM", "GET_VALUE", "PRINT", 
+char* TerminalEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY", "START", "END", "DECLARE", "MODULE", "DRIVER", "PROGRAM", "GET_VALUE", "PRINT", 
 	"USE", "WITH", "PARAMETERS", "TRUE", "FALSE", "TAKES", "INPUT", "RETURNS", "AND", "OR", "FOR", "IN", "SWITCH", "CASE", "BREAK",
 	"DEFAULT", "WHILE", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GE", "GT", "EQ", "NE", "DEF", "ENDDEF", "DRIVERDEF", "DRIVERENDDEF",
-	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR","e","$"};
+	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR","$","e"};
 
-
-// parse table
 
 // Following structures are used for representing the grammar
 typedef union symbol
@@ -58,7 +63,7 @@ typedef union symbol
 typedef enum 
 {
     
- 	terminal,
+    terminal,
     nonterminal
 }Type;
 
@@ -85,47 +90,59 @@ typedef struct
 }Grammar;
 
 
-char *ParseTable[100][100];
 
 
 // first and follow -----------------------------------
 
-struct First_
+typedef struct
 {
 	int *firstSet;
-};
-typedef struct First_ [NON_TERMINALS] First;
-
-struct Follow_
-{
-	int *followSet;
-};
-typedef struct Follow_ [NON_TERMINALS] Follow;
+}First;
+// typedef struct First[NON_TERMINALS] First;
 
 typedef struct
 {
-	First first;
-	Follow follow;
+	int *followSet;
+}Follow;
+// typedef struct Follow_[NON_TERMINALS] Follow;
 
+typedef struct
+{
+	First* first;
+	Follow* follow;
 }FirstAndFollow;
 
 
-// parse table ----------------------------------------
-//		t1	t2	t3	$
-// Nt1
-// NT2
-// NT3
+//Parse Table structs
 
-
-typedef struct Parse_
+typedef struct parse
 {
 	int rule_no;
+}parse;
 
-}
-
-typedef struct Parse_[NON_TERMINALS][TERMINALS] ParseTable;
+typedef struct ParseTable
+{
+	parse Parse[NON_TERMINALS][TERMINALS];
+}ParseTable;
 // g -> non_terminals [i] -> rules [ruleno] RHSNode*
 
+
+//Trie--------------------------------------------------------------
+typedef union
+{
+    char c;
+    int pos;
+}entry;
+
+typedef struct node{
+    entry data;
+    struct node* next[28];
+}node;
+
+typedef struct trie{
+    int num;
+    node* children;
+}trie;
 
 // mapping table -----------------------------------------------
 
