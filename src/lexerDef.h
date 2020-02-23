@@ -1,18 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 
 #ifndef _lexerdef_
 #define _lexerdef_
 
+#include <stdio.h>
+#include <stdlib.h>
+
+
 //Enum for storing the token names
 
 typedef enum {
-	INTEGER, REAL, BOOLEAN, OF, ARRAY, START, END, DECLARE, MODULE, DRIVER, PROGRAM, GET_VALUE, PRINT, 
-	USE, WITH, PARAMETERS, TRUE, FALSE, TAKES, INPUT, RETURNS, AND, OR, FOR, IN, SWITCH, CASE, BREAK,
-	DEFAULT, WHILE, PLUS, MINUS, MUL, DIV, LT, LE, GE, GT, EQ, NE, DEF, ENDDEF, DRIVERDEF, DRIVERENDDEF,
-	COLON, RANGEOP, SEMICOL, COMMA, ASSIGNOP, SQBO, SQBC, BO, BC, COMMENTMARK,ID,NUM,RNUM,ERROR
-}TokenName;
+    INTEGER, REAL, BOOLEAN, OF, ARRAY, START, END, DECLARE, MODULE, DRIVER, PROGRAM, GET_VALUE, PRINT, 
+    USE, WITH, PARAMETERS, TRUE, FALSE, TAKES, INPUT, RETURNS, AND, OR, FOR, IN, SWITCH, CASE, BREAK,
+    DEFAULT, WHILE, PLUS, MINUS, MUL, DIV, LT, LE, GE, GT, EQ, NE, DEF, ENDDEF, DRIVERDEF, DRIVERENDDEF,
+    COLON, RANGEOP, SEMICOL, COMMA, ASSIGNOP, SQBO, SQBC, BO, BC, COMMENTMARK,ID,NUM,RNUM,ERROR,DOLLAR,EPSILON
+}Terminal;
 
 typedef union{
 	int intValue;
@@ -20,8 +21,8 @@ typedef union{
 }value;
 
 typedef struct{
-	TokenName name;  // for representing the token-name as given in the specifications
-	char lexeme[22]; //character sequence of the tokens in the program
+	Terminal name;  // for representing the token-name as given in the specifications
+	char lexeme[50]; //character sequence of` the tokens in the program
 	int lineNo;   //line number of the token which is used for error reporting
 	value* val;   // to store the value of integers and floats
 }Token;

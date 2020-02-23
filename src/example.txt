@@ -1,0 +1,608 @@
+----	               (null)	 no	 program
+----	              program	 no	 moduleDeclarations
+----	              program	 no	 otherModules
+----	              program	 no	 driverModule
+----	              program	 no	 otherModules
+----	   moduleDeclarations	 no	 moduleDeclaration
+----	   moduleDeclarations	 no	 moduleDeclarations
+----	         otherModules	 no	 module
+----	         otherModules	 no	 otherModules
+<<<	 27	 DRIVERDEF	         driverModule	 yes
+ driver	 27	 DRIVER	         driverModule	 yes
+ program	 27	 PROGRAM	         driverModule	 yes
+ >>>	 27	 DRIVERENDDEF	         driverModule	 yes
+ ----	         driverModule	 no	 moduleDef
+----	         otherModules	 no	 module
+----	         otherModules	 no	 otherModules
+declare	 1	 DECLARE	    moduleDeclaration	 yes
+ module	 1	 MODULE	    moduleDeclaration	 yes
+ readArr	 1	 ID	    moduleDeclaration	 yes
+ ;	 1	 SEMICOL	    moduleDeclaration	 yes
+ 	 0	 e	   moduleDeclarations	 yes
+ <<	 3	 DEF	               module	 yes
+ module	 3	 MODULE	               module	 yes
+ arraySum	 3	 ID	               module	 yes
+ >>	 3	 ENDDEF	               module	 yes
+ takes	 4	 TAKES	               module	 yes
+ input	 4	 INPUT	               module	 yes
+ [	 4	 SQBO	               module	 yes
+ ----	               module	 no	 input_plist
+]	 4	 SQBC	               module	 yes
+ ;	 4	 SEMICOL	               module	 yes
+ ----	               module	 no	 ret
+----	               module	 no	 moduleDef
+	 0	 e	         otherModules	 yes
+ start	 28	 START	            moduleDef	 yes
+ ----	            moduleDef	 no	 statements
+end	 37	 END	            moduleDef	 yes
+ <<	 44	 DEF	               module	 yes
+ module	 44	 MODULE	               module	 yes
+ readArr	 44	 ID	               module	 yes
+ >>	 44	 ENDDEF	               module	 yes
+ takes	 45	 TAKES	               module	 yes
+ input	 45	 INPUT	               module	 yes
+ [	 45	 SQBO	               module	 yes
+ ----	               module	 no	 input_plist
+]	 45	 SQBC	               module	 yes
+ ;	 45	 SEMICOL	               module	 yes
+ ----	               module	 no	 ret
+----	               module	 no	 moduleDef
+list	 4	 ID	          input_plist	 yes
+ :	 4	 COLON	          input_plist	 yes
+ ----	          input_plist	 no	 dataType
+----	          input_plist	 no	 input_plist_dash
+returns	 5	 RETURNS	                  ret	 yes
+ [	 5	 SQBO	                  ret	 yes
+ ----	                  ret	 no	 output_plist
+]	 5	 SQBC	                  ret	 yes
+ ;	 5	 SEMICOL	                  ret	 yes
+ start	 6	 START	            moduleDef	 yes
+ ----	            moduleDef	 no	 statements
+end	 26	 END	            moduleDef	 yes
+ ----	           statements	 no	 statement
+----	           statements	 no	 statements
+arr1	 45	 ID	          input_plist	 yes
+ :	 45	 COLON	          input_plist	 yes
+ ----	          input_plist	 no	 dataType
+----	          input_plist	 no	 input_plist_dash
+	 0	 e	                  ret	 yes
+ start	 46	 START	            moduleDef	 yes
+ ----	            moduleDef	 no	 statements
+end	 57	 END	            moduleDef	 yes
+ array	 4	 ARRAY	             dataType	 yes
+ [	 4	 SQBO	             dataType	 yes
+ ----	             dataType	 no	 range_array
+]	 4	 SQBC	             dataType	 yes
+ of	 4	 OF	             dataType	 yes
+ ----	             dataType	 no	 type
+,	 4	 COMMA	     input_plist_dash	 yes
+ n	 4	 ID	     input_plist_dash	 yes
+ 	 0	 COLON	     input_plist_dash	 yes
+ ----	     input_plist_dash	 no	 dataType
+----	     input_plist_dash	 no	 input_plist_dash
+sum	 5	 ID	         output_plist	 yes
+ :	 5	 COLON	         output_plist	 yes
+ ----	         output_plist	 no	 type
+----	         output_plist	 no	 output_plist_dash
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+----	            statement	 no	 declareStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+array	 45	 ARRAY	             dataType	 yes
+ [	 45	 SQBO	             dataType	 yes
+ ----	             dataType	 no	 range_array
+]	 45	 SQBC	             dataType	 yes
+ of	 45	 OF	             dataType	 yes
+ ----	             dataType	 no	 type
+,	 45	 COMMA	     input_plist_dash	 yes
+ k	 45	 ID	     input_plist_dash	 yes
+ :	 45	 COLON	     input_plist_dash	 yes
+ ----	     input_plist_dash	 no	 dataType
+----	     input_plist_dash	 no	 input_plist_dash
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+----	          range_array	 no	 index
+..	 4	 RANGEOP	          range_array	 yes
+ ----	          range_array	 no	 index
+real	 4	 REAL	                 type	 yes
+ integer	 4	 INTEGER	             dataType	 yes
+ 	 0	 e	     input_plist_dash	 yes
+ real	 5	 REAL	                 type	 yes
+ 	 0	 e	    output_plist_dash	 yes
+ ----	            statement	 no	 declareStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+declare	 29	 DECLARE	          declareStmt	 yes
+ ----	          declareStmt	 no	 idList
+:	 29	 COLON	          declareStmt	 yes
+ ----	          declareStmt	 no	 dataType
+;	 29	 SEMICOL	          declareStmt	 yes
+ ----	            statement	 no	 declareStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+----	          range_array	 no	 index
+..	 45	 RANGEOP	          range_array	 yes
+ ----	          range_array	 no	 index
+real	 45	 REAL	                 type	 yes
+ integer	 45	 INTEGER	             dataType	 yes
+ 	 0	 e	     input_plist_dash	 yes
+ ----	            statement	 no	 declareStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+1	 4	 NUM	                index	 yes
+ 15	 4	 NUM	                index	 yes
+ declare	 7	 DECLARE	          declareStmt	 yes
+ ----	          declareStmt	 no	 idList
+:	 7	 COLON	          declareStmt	 yes
+ ----	          declareStmt	 no	 dataType
+;	 7	 SEMICOL	          declareStmt	 yes
+ ----	            statement	 no	 declareStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+A	 29	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+array	 29	 ARRAY	             dataType	 yes
+ [	 29	 SQBO	             dataType	 yes
+ ----	             dataType	 no	 range_array
+]	 29	 SQBC	             dataType	 yes
+ of	 29	 OF	             dataType	 yes
+ ----	             dataType	 no	 type
+declare	 30	 DECLARE	          declareStmt	 yes
+ ----	          declareStmt	 no	 idList
+:	 30	 COLON	          declareStmt	 yes
+ ----	          declareStmt	 no	 dataType
+;	 30	 SEMICOL	          declareStmt	 yes
+ ----	            statement	 no	 declareStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+1	 45	 NUM	                index	 yes
+ 15	 45	 NUM	                index	 yes
+ declare	 47	 DECLARE	          declareStmt	 yes
+ ----	          declareStmt	 no	 idList
+:	 47	 COLON	          declareStmt	 yes
+ ----	          declareStmt	 no	 dataType
+;	 47	 SEMICOL	          declareStmt	 yes
+ ----	            statement	 no	 declareStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+index	 7	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+integer	 7	 INTEGER	             dataType	 yes
+ declare	 8	 DECLARE	          declareStmt	 yes
+ ----	          declareStmt	 no	 idList
+:	 8	 COLON	          declareStmt	 yes
+ ----	          declareStmt	 no	 dataType
+;	 8	 SEMICOL	          declareStmt	 yes
+ ----	            statement	 no	 simpleStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+	 0	 e	          idList_dash	 yes
+ ----	          range_array	 no	 index
+..	 29	 RANGEOP	          range_array	 yes
+ ----	          range_array	 no	 index
+real	 29	 REAL	                 type	 yes
+ k	 30	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+integer	 30	 INTEGER	             dataType	 yes
+ declare	 31	 DECLARE	          declareStmt	 yes
+ ----	          declareStmt	 no	 idList
+:	 31	 COLON	          declareStmt	 yes
+ ----	          declareStmt	 no	 dataType
+;	 31	 SEMICOL	          declareStmt	 yes
+ ----	            statement	 no	 ioStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+tempvar	 47	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+declare	 48	 DECLARE	          declareStmt	 yes
+ ----	          declareStmt	 no	 idList
+:	 48	 COLON	          declareStmt	 yes
+ ----	          declareStmt	 no	 dataType
+;	 48	 SEMICOL	          declareStmt	 yes
+ ----	            statement	 no	 simpleStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+	 0	 e	          idList_dash	 yes
+ t	 8	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+boolean	 8	 BOOLEAN	             dataType	 yes
+ ----	           simpleStmt	 no	 assignmentStmt
+----	            statement	 no	 iterativeStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+1	 29	 NUM	                index	 yes
+ 15	 29	 NUM	                index	 yes
+ 	 0	 e	          idList_dash	 yes
+ s	 31	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+real	 31	 REAL	             dataType	 yes
+ get_value	 32	 GET_VALUE	               ioStmt	 yes
+ (	 32	 BO	               ioStmt	 yes
+ k	 32	 ID	               ioStmt	 yes
+ )	 32	 BC	               ioStmt	 yes
+ ;	 32	 SEMICOL	               ioStmt	 yes
+ ----	            statement	 no	 simpleStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+	 0	 e	          idList_dash	 yes
+ i	 48	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+integer	 48	 INTEGER	             dataType	 yes
+ ----	           simpleStmt	 no	 assignmentStmt
+----	            statement	 no	 iterativeStmt
+	 0	 e	           statements	 yes
+ 	 0	 e	          idList_dash	 yes
+ sum	 9	 ID	       assignmentStmt	 yes
+ ----	       assignmentStmt	 no	 whichStmt
+for	 10	 FOR	        iterativeStmt	 yes
+ (	 10	 BO	        iterativeStmt	 yes
+ index	 10	 ID	        iterativeStmt	 yes
+ 	 0	 IN	        iterativeStmt	 yes
+ ----	        iterativeStmt	 no	 range
+)	 10	 BC	        iterativeStmt	 yes
+ start	 11	 START	        iterativeStmt	 yes
+ ----	        iterativeStmt	 no	 statements
+end	 24	 END	        iterativeStmt	 yes
+ ----	            statement	 no	 ioStmt
+	 0	 e	           statements	 yes
+ 	 0	 e	          idList_dash	 yes
+ ----	           simpleStmt	 no	 moduleReuseStmt
+----	            statement	 no	 simpleStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+	 0	 e	          idList_dash	 yes
+ i	 49	 ID	       assignmentStmt	 yes
+ ----	       assignmentStmt	 no	 whichStmt
+while	 50	 WHILE	        iterativeStmt	 yes
+ (	 50	 BO	        iterativeStmt	 yes
+ ----	        iterativeStmt	 no	 arithmeticOrBooleanExpr
+)	 50	 BC	        iterativeStmt	 yes
+ start	 51	 START	        iterativeStmt	 yes
+ ----	        iterativeStmt	 no	 statements
+end	 56	 END	        iterativeStmt	 yes
+ 1	 10	 NUM	                range	 yes
+ ..	 10	 RANGEOP	                range	 yes
+ 15	 10	 NUM	                range	 yes
+ ----	           statements	 no	 statement
+----	           statements	 no	 statements
+print	 25	 PRINT	               ioStmt	 yes
+ (	 25	 BO	               ioStmt	 yes
+ ----	               ioStmt	 no	 var
+)	 25	 BC	               ioStmt	 yes
+ ;	 25	 SEMICOL	               ioStmt	 yes
+ ----	      moduleReuseStmt	 no	 optional
+use	 33	 USE	      moduleReuseStmt	 yes
+ module	 33	 MODULE	      moduleReuseStmt	 yes
+ readArr	 33	 ID	      moduleReuseStmt	 yes
+ 	 0	 WITH	      moduleReuseStmt	 yes
+ 	 0	 PARAMETERS	      moduleReuseStmt	 yes
+ ----	      moduleReuseStmt	 no	 idList
+;	 33	 SEMICOL	      moduleReuseStmt	 yes
+ ----	           simpleStmt	 no	 moduleReuseStmt
+----	            statement	 no	 simpleStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+----	            whichStmt	 no	 lvalueIDStmt
+----	 arithmeticOrBooleanExpr	 no	 anyTerm
+----	 arithmeticOrBooleanExpr	 no	 bool
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+----	            statement	 no	 simpleStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+----	                  var	 no	 var_id_num
+	 0	 e	             optional	 yes
+ A	 33	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+----	      moduleReuseStmt	 no	 optional
+use	 34	 USE	      moduleReuseStmt	 yes
+ module	 34	 MODULE	      moduleReuseStmt	 yes
+ arraySum	 34	 ID	      moduleReuseStmt	 yes
+ with	 34	 WITH	      moduleReuseStmt	 yes
+ parameters	 34	 PARAMETERS	      moduleReuseStmt	 yes
+ ----	      moduleReuseStmt	 no	 idList
+;	 34	 SEMICOL	      moduleReuseStmt	 yes
+ ----	           simpleStmt	 no	 assignmentStmt
+----	            statement	 no	 ioStmt
+	 0	 e	           statements	 yes
+ :=	 49	 ASSIGNOP	         lvalueIDStmt	 yes
+ ----	         lvalueIDStmt	 no	 expression
+;	 49	 SEMICOL	         lvalueIDStmt	 yes
+ ----	              anyTerm	 no	 arithmeticExpr
+----	              anyTerm	 no	 arithmeticExpr_dash
+	 0	 e	                 bool	 yes
+ ----	            statement	 no	 ioStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+----	           simpleStmt	 no	 assignmentStmt
+----	            statement	 no	 conditionalStmt
+	 0	 e	           statements	 yes
+ sum	 25	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+,	 33	 COMMA	          idList_dash	 yes
+ k	 33	 ID	          idList_dash	 yes
+ ----	          idList_dash	 no	 idList_dash
+[	 34	 SQBO	             optional	 yes
+ ----	             optional	 no	 idList
+]	 34	 SQBC	             optional	 yes
+ :=	 34	 ASSIGNOP	             optional	 yes
+ A	 34	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+s	 35	 ID	       assignmentStmt	 yes
+ ----	       assignmentStmt	 no	 whichStmt
+print	 36	 PRINT	               ioStmt	 yes
+ (	 36	 BO	               ioStmt	 yes
+ ----	               ioStmt	 no	 var
+)	 36	 BC	               ioStmt	 yes
+ 	 0	 SEMICOL	               ioStmt	 yes
+ ----	           expression	 no	 arithmeticOrBooleanExpr
+----	       arithmeticExpr	 no	 term
+----	       arithmeticExpr	 no	 arithmeticExpr_recur
+----	  arithmeticExpr_dash	 no	 relationalOp
+----	  arithmeticExpr_dash	 no	 arithmeticExpr
+get_value	 52	 GET_VALUE	               ioStmt	 yes
+ (	 52	 BO	               ioStmt	 yes
+ tempvar	 52	 ID	               ioStmt	 yes
+ )	 52	 BC	               ioStmt	 yes
+ ;	 52	 SEMICOL	               ioStmt	 yes
+ ----	            statement	 no	 simpleStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+t	 12	 ID	       assignmentStmt	 yes
+ ----	       assignmentStmt	 no	 whichStmt
+switch	 13	 SWITCH	      conditionalStmt	 yes
+ (	 13	 BO	      conditionalStmt	 yes
+ t	 13	 ID	      conditionalStmt	 yes
+ )	 13	 BC	      conditionalStmt	 yes
+ start	 14	 START	      conditionalStmt	 yes
+ ----	      conditionalStmt	 no	 caseStmts
+----	      conditionalStmt	 no	 default
+end	 22	 END	      conditionalStmt	 yes
+ 	 0	 e	              whichId	 yes
+ 	 0	 e	          idList_dash	 yes
+ s	 34	 ID	               idList	 yes
+ ----	               idList	 no	 idList_dash
+,	 34	 COMMA	          idList_dash	 yes
+ k	 34	 ID	          idList_dash	 yes
+ ----	          idList_dash	 no	 idList_dash
+----	            whichStmt	 no	 lvalueIDStmt
+----	                  var	 no	 var_id_num
+----	 arithmeticOrBooleanExpr	 no	 anyTerm
+----	 arithmeticOrBooleanExpr	 no	 bool
+----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+	 0	 e	 arithmeticExpr_recur	 yes
+ <=	 50	 LE	         relationalOp	 yes
+ ----	       arithmeticExpr	 no	 term
+----	       arithmeticExpr	 no	 arithmeticExpr_recur
+----	           simpleStmt	 no	 assignmentStmt
+----	            statement	 no	 simpleStmt
+	 0	 e	           statements	 yes
+ ----	            whichStmt	 no	 lvalueIDStmt
+case	 15	 CASE	            caseStmts	 yes
+ ----	            caseStmts	 no	 value
+:	 15	 COLON	            caseStmts	 yes
+ ----	            caseStmts	 no	 statements
+break	 17	 BREAK	            caseStmts	 yes
+ ;	 17	 SEMICOL	            caseStmts	 yes
+ ----	            caseStmts	 no	 caseStmt
+	 0	 e	              default	 yes
+ 	 0	 e	          idList_dash	 yes
+ 	 0	 e	          idList_dash	 yes
+ :=	 35	 ASSIGNOP	         lvalueIDStmt	 yes
+ ----	         lvalueIDStmt	 no	 expression
+;	 35	 SEMICOL	         lvalueIDStmt	 yes
+ s	 36	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+----	              anyTerm	 no	 arithmeticExpr
+----	              anyTerm	 no	 arithmeticExpr_dash
+	 0	 e	                 bool	 yes
+ ----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ ----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+	 0	 e	 arithmeticExpr_recur	 yes
+ arr1	 53	 ID	       assignmentStmt	 yes
+ ----	       assignmentStmt	 no	 whichStmt
+----	           simpleStmt	 no	 assignmentStmt
+:=	 12	 ASSIGNOP	         lvalueIDStmt	 yes
+ ----	         lvalueIDStmt	 no	 expression
+;	 12	 SEMICOL	         lvalueIDStmt	 yes
+ true	 15	 TRUE	                value	 yes
+ ----	           statements	 no	 statement
+----	           statements	 no	 statements
+case	 18	 CASE	             caseStmt	 yes
+ ----	             caseStmt	 no	 value
+:	 18	 COLON	             caseStmt	 yes
+ ----	             caseStmt	 no	 statements
+break	 21	 BREAK	             caseStmt	 yes
+ ;	 21	 SEMICOL	             caseStmt	 yes
+ ----	             caseStmt	 no	 caseStmt
+----	           expression	 no	 arithmeticOrBooleanExpr
+	 0	 e	              whichId	 yes
+ ----	       arithmeticExpr	 no	 term
+----	       arithmeticExpr	 no	 arithmeticExpr_recur
+	 0	 e	  arithmeticExpr_dash	 yes
+ i	 50	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ ----	            whichStmt	 no	 lvalueARRStmt
+i	 54	 ID	       assignmentStmt	 yes
+ ----	       assignmentStmt	 no	 whichStmt
+----	           expression	 no	 arithmeticOrBooleanExpr
+----	            statement	 no	 ioStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+false	 18	 FALSE	                value	 yes
+ ----	           statements	 no	 statement
+----	           statements	 no	 statements
+	 0	 e	             caseStmt	 yes
+ ----	 arithmeticOrBooleanExpr	 no	 anyTerm
+----	 arithmeticOrBooleanExpr	 no	 bool
+----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+	 0	 e	 arithmeticExpr_recur	 yes
+ 	 0	 e	              whichId	 yes
+ k	 50	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+[	 53	 SQBO	        lvalueARRStmt	 yes
+ ----	        lvalueARRStmt	 no	 index
+]	 53	 SQBC	        lvalueARRStmt	 yes
+ :=	 53	 ASSIGNOP	        lvalueARRStmt	 yes
+ ----	        lvalueARRStmt	 no	 expression
+;	 53	 SEMICOL	        lvalueARRStmt	 yes
+ ----	            whichStmt	 no	 lvalueIDStmt
+----	 arithmeticOrBooleanExpr	 no	 anyTerm
+----	 arithmeticOrBooleanExpr	 no	 bool
+print	 15	 PRINT	               ioStmt	 yes
+ (	 15	 BO	               ioStmt	 yes
+ ----	               ioStmt	 no	 var
+)	 15	 BC	               ioStmt	 yes
+ ;	 15	 SEMICOL	               ioStmt	 yes
+ ----	            statement	 no	 simpleStmt
+	 0	 e	           statements	 yes
+ ----	            statement	 no	 ioStmt
+----	           statements	 no	 statement
+----	           statements	 no	 statements
+----	              anyTerm	 no	 arithmeticExpr
+----	              anyTerm	 no	 arithmeticExpr_dash
+----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ 	 0	 e	              whichId	 yes
+ i	 53	 ID	                index	 yes
+ :=	 54	 ASSIGNOP	         lvalueIDStmt	 yes
+ ----	         lvalueIDStmt	 no	 expression
+;	 54	 SEMICOL	         lvalueIDStmt	 yes
+ ----	              anyTerm	 no	 arithmeticExpr
+----	              anyTerm	 no	 arithmeticExpr_dash
+	 0	 e	                 bool	 yes
+ ----	                  var	 no	 var_id_num
+----	           simpleStmt	 no	 assignmentStmt
+print	 18	 PRINT	               ioStmt	 yes
+ (	 18	 BO	               ioStmt	 yes
+ ----	               ioStmt	 no	 var
+)	 18	 BC	               ioStmt	 yes
+ ;	 18	 SEMICOL	               ioStmt	 yes
+ ----	            statement	 no	 ioStmt
+	 0	 e	           statements	 yes
+ ----	       arithmeticExpr	 no	 term
+----	       arithmeticExpr	 no	 arithmeticExpr_recur
+----	  arithmeticExpr_dash	 no	 relationalOp
+----	  arithmeticExpr_dash	 no	 arithmeticExpr
+1	 49	 NUM	           var_id_num	 yes
+ ----	           expression	 no	 arithmeticOrBooleanExpr
+----	       arithmeticExpr	 no	 term
+----	       arithmeticExpr	 no	 arithmeticExpr_recur
+----	  arithmeticExpr_dash	 no	 relationalOp
+----	  arithmeticExpr_dash	 no	 arithmeticExpr
+list	 15	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+sum	 16	 ID	       assignmentStmt	 yes
+ ----	       assignmentStmt	 no	 whichStmt
+----	                  var	 no	 var_id_num
+print	 19	 PRINT	               ioStmt	 yes
+ (	 19	 BO	               ioStmt	 yes
+ ----	               ioStmt	 no	 var
+)	 19	 BC	               ioStmt	 yes
+ ;	 19	 SEMICOL	               ioStmt	 yes
+ ----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+	 0	 e	 arithmeticExpr_recur	 yes
+ <=	 35	 LE	         relationalOp	 yes
+ ----	       arithmeticExpr	 no	 term
+----	       arithmeticExpr	 no	 arithmeticExpr_recur
+----	 arithmeticOrBooleanExpr	 no	 anyTerm
+----	 arithmeticOrBooleanExpr	 no	 bool
+----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+	 0	 e	 arithmeticExpr_recur	 yes
+ <=	 12	 LE	         relationalOp	 yes
+ ----	       arithmeticExpr	 no	 term
+----	       arithmeticExpr	 no	 arithmeticExpr_recur
+[	 15	 SQBO	              whichId	 yes
+ ----	              whichId	 no	 index
+]	 15	 SQBC	              whichId	 yes
+ ----	            whichStmt	 no	 lvalueIDStmt
+sum	 18	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+----	                  var	 no	 var_id_num
+----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ ----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+	 0	 e	 arithmeticExpr_recur	 yes
+ ----	              anyTerm	 no	 arithmeticExpr
+----	              anyTerm	 no	 arithmeticExpr_dash
+	 0	 e	                 bool	 yes
+ ----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ ----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+	 0	 e	 arithmeticExpr_recur	 yes
+ index	 15	 ID	                index	 yes
+ :=	 16	 ASSIGNOP	         lvalueIDStmt	 yes
+ ----	         lvalueIDStmt	 no	 expression
+;	 16	 SEMICOL	         lvalueIDStmt	 yes
+ 	 0	 e	              whichId	 yes
+ index	 19	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+s	 35	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ ----	       arithmeticExpr	 no	 term
+----	       arithmeticExpr	 no	 arithmeticExpr_recur
+	 0	 e	  arithmeticExpr_dash	 yes
+ index	 12	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ ----	           expression	 no	 arithmeticOrBooleanExpr
+	 0	 e	              whichId	 yes
+ 	 0	 e	              whichId	 yes
+ n	 35	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+----	 arithmeticExpr_recur	 no	 op_plus_minus
+----	 arithmeticExpr_recur	 no	 term
+----	 arithmeticExpr_recur	 no	 arithmeticExpr_recur
+	 0	 e	              whichId	 yes
+ n	 12	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+----	 arithmeticOrBooleanExpr	 no	 anyTerm
+----	 arithmeticOrBooleanExpr	 no	 bool
+	 0	 e	              whichId	 yes
+ ----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ +	 54	 PLUS	        op_plus_minus	 yes
+ ----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+	 0	 e	 arithmeticExpr_recur	 yes
+ 	 0	 e	              whichId	 yes
+ ----	              anyTerm	 no	 arithmeticExpr
+----	              anyTerm	 no	 arithmeticExpr_dash
+	 0	 e	                 bool	 yes
+ i	 54	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ ----	       arithmeticExpr	 no	 term
+----	       arithmeticExpr	 no	 arithmeticExpr_recur
+	 0	 e	  arithmeticExpr_dash	 yes
+ 	 0	 e	              whichId	 yes
+ 1	 54	 NUM	           var_id_num	 yes
+ ----	                 term	 no	 factor
+----	                 term	 no	 term_dash
+	 0	 e	 arithmeticExpr_recur	 yes
+ ----	               factor	 no	 var_id_num
+	 0	 e	            term_dash	 yes
+ sum	 16	 ID	           var_id_num	 yes
+ ----	           var_id_num	 no	 whichId
+[	 16	 SQBO	              whichId	 yes
+ ----	              whichId	 no	 index
+]	 16	 SQBC	              whichId	 yes
+ index	 16	 ID	                index	 yes
+ 

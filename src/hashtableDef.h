@@ -1,26 +1,28 @@
 
-#ifndef _abc_
-#define _abc_
+#ifndef _hash_
+#define _hash_
 
 #include "lexerDef.h"
+// #include "parserDef.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 
+
 typedef struct keyword{
    char* token;
-   TokenName name;
+   Terminal name;
    struct keyword* k;
 }keyword;
 
-typedef struct entry{
+typedef struct hashentry{
     int chain_size;
     keyword* ptr;
-}entry;
+}hashentry;
 
 typedef struct hashtable{
-   entry** arr;
+   hashentry** arr;
    int size;
 } HT;
 

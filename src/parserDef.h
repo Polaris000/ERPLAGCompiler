@@ -1,21 +1,20 @@
+#ifndef _parserdef_
+#define _parserdef_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
 
-#ifndef _parserdef_
-#define _parserdef_
-// parse table ----------------------------------------
-//		t1	t2	t3	$
-// Nt1
-// NT2
-// NT3
 
-// pt[NT][T] <- char * 
+#include "lexer.h"
 
 #define NON_TERMINALS 55
 #define TERMINALS 60
+
+extern char* nonTerminalEnumToString[];
+extern char* TerminalEnumToString[];
 
 typedef enum 
 {
@@ -26,31 +25,9 @@ typedef enum
     optional, idList, idList_dash, expression, unaryOrExpr, arithmeticOrBooleanExpr, anyTerm,
     arithmeticExpr_dash, bool, arithmeticExpr, arithmeticExpr_recur, term, term_dash, factor, 
     op_plus_minus, op_mul_div, logicalOp, relationalOp, declareStmt, conditionalStmt, caseStmts,
-    caseStmt, value,Default,iterativeStmt, range 
+    caseStmt, Value,Default,iterativeStmt, range, ROOT
 } NonTerminal;
 
-typedef enum {
-    INTEGER, REAL, BOOLEAN, OF, ARRAY, START, END, DECLARE, MODULE, DRIVER, PROGRAM, GET_VALUE, PRINT, 
-    USE, WITH, PARAMETERS, TRUE, FALSE, TAKES, INPUT, RETURNS, AND, OR, FOR, IN, SWITCH, CASE, BREAK,
-    DEFAULT, WHILE, PLUS, MINUS, MUL, DIV, LT, LE, GE, GT, EQ, NE, DEF, ENDDEF, DRIVERDEF, DRIVERENDDEF,
-    COLON, RANGEOP, SEMICOL, COMMA, ASSIGNOP, SQBO, SQBC, BO, BC, COMMENTMARK,ID,NUM,RNUM,ERROR,DOLLAR,EPSILON
-}Terminal;
-
-char* nonTerminalEnumToString[] = {
-    "program","moduleDeclarations","moduleDeclaration","otherModules", "driverModule", "module",
-    "ret", "input_plist", "input_plist_dash", "output_plist", "output_plist_dash", "dataType", "range_array",
-    "type", "moduleDef", "statements", "statement", "ioStmt", "var", "var_id_num", "boolConstt", "whichId",
-    "simpleStmt", "assignmentStmt", "whichStmt", "lvalueIDStmt", "lvalueARRStmt", "index", "moduleReuseStmt",
-    "optional", "idList", "idList_dash", "expression", "unaryOrExpr", "arithmeticOrBooleanExpr", "anyTerm",
-    "arithmeticExpr_dash", "bool", "arithmeticExpr", "arithmeticExpr_recur", "term", "term_dash", "factor", 
-    "op_plus_minus", "op_mul_div", "logicalOp", "relationalOp", "declareStmt", "conditionalStmt", "caseStmts",
-    "caseStmt", "value", "default", "iterativeStmt", "range"
-};
-
-char* TerminalEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY", "START", "END", "DECLARE", "MODULE", "DRIVER", "PROGRAM", "GET_VALUE", "PRINT", 
-	"USE", "WITH", "PARAMETERS", "TRUE", "FALSE", "TAKES", "INPUT", "RETURNS", "AND", "OR", "FOR", "IN", "SWITCH", "CASE", "BREAK",
-	"DEFAULT", "WHILE", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GE", "GT", "EQ", "NE", "DEF", "ENDDEF", "DRIVERDEF", "DRIVERENDDEF",
-	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR","$","e"};
 
 
 // Following structures are used for representing the grammar
@@ -144,37 +121,77 @@ typedef struct trie{
     node* children;
 }trie;
 
-// mapping table -----------------------------------------------
 
-// typedef struct
-// {
-// 	char str[100];
-// 	Symbol s;
-// 	Type t;
-// }table;
 
-// table table[10]; // set size appropriately
+//Parse Tree Construction
 
-// typedef union{
-// 	int intValue;
-// 	float fValue;
-// }value;
+typedef struct TreeNode TreeNode;
 
-// parse tree ------------------------------------------
-// struct ParseTree
-// {
-// 	// display  info
-// 	char lexeme[100]; // --- if not leaf node
-// 	int lineno;
-// 	char tokenname[25]; 
-// 	int isLeafNode;
-// 	Symbol ParentSymbol; // ROOT for root node
-// 	Symbol NodeSymbol; // if not leaf
-// 	value * val;
 
-// 	// misc
-// 	struct ParseTree *children;
-// };
+typedef struct internal
+{
+    // display info
+    char lexeme[100]; // ----
+    int lineno;
+    NonTerminal parent;      // would be ROOT for root node
+    NonTerminal nodesym;    // non_term symbol
 
-// typedef struct ParseTree ParseTree;
+    // structure
+    int rhs_size;            // num_of_elems in rhs of rule
+    TreeNode** children;    // array of pointers to children
+}Internal;
+
+typedef struct leaf
+{
+    // display info
+    char lexeme[100];
+    int lineno;
+    Terminal t;     // token
+    value* val;    // if num/rnum
+    NonTerminal parent; // non_term sym of parent
+}Leaf;
+
+
+typedef union NodeData
+{
+    Internal internalnode;
+    Leaf leafnode;
+}NodeData;
+
+typedef struct TreeNode{
+    NodeData t;
+    int tag;
+}TreeNode;
+
+
+
+
+
+
+
+typedef struct ParseTree{
+    TreeNode* root;
+    int levels;
+}ParseTree;
+// typedef union node TreeNode;
+
+// points to root of tree
+typedef struct Queue{
+    int top;
+    int end;
+    TreeNode** t;
+    int size;
+    int capacity;
+}Queue;
+
+
+
+typedef struct Stack
+{
+    int top;
+    TreeNode ** t;
+    int size;
+    int capacity;
+}Stack;
+
 #endif

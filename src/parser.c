@@ -1,9 +1,25 @@
 
 #include "parser.h"
-// #include "lexer.h"
 // #include "stack.h"
 
+ char* nonTerminalEnumToString[] = {
+    "program","moduleDeclarations","moduleDeclaration","otherModules", "driverModule", "module",
+    "ret", "input_plist", "input_plist_dash", "output_plist", "output_plist_dash", "dataType", "range_array",
+    "type", "moduleDef", "statements", "statement", "ioStmt", "var", "var_id_num", "boolConstt", "whichId",
+    "simpleStmt", "assignmentStmt", "whichStmt", "lvalueIDStmt", "lvalueARRStmt", "index", "moduleReuseStmt",
+    "optional", "idList", "idList_dash", "expression", "unaryOrExpr", "arithmeticOrBooleanExpr", "anyTerm",
+    "arithmeticExpr_dash", "bool", "arithmeticExpr", "arithmeticExpr_recur", "term", "term_dash", "factor", 
+    "op_plus_minus", "op_mul_div", "logicalOp", "relationalOp", "declareStmt", "conditionalStmt", "caseStmts",
+    "caseStmt", "value", "default", "iterativeStmt", "range"
+};
 
+char* TerminalEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY", "START", "END", "DECLARE", "MODULE", "DRIVER", "PROGRAM", "GET_VALUE", "PRINT", 
+	"USE", "WITH", "PARAMETERS", "TRUE", "FALSE", "TAKES", "INPUT", "RETURNS", "AND", "OR", "FOR", "IN", "SWITCH", "CASE", "BREAK",
+	"DEFAULT", "WHILE", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GE", "GT", "EQ", "NE", "DEF", "ENDDEF", "DRIVERDEF", "DRIVERENDDEF",
+	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR","$","e"};
+
+extern int endOfFile;
+extern int currLine;
 char* substring(const char *src, int m, int n)
 {
 	int len = n - m;
@@ -35,7 +51,7 @@ trie* initialize_trie(){
     return t;
 }
 
-int lookup(trie* t,char* w){
+int lookUp(trie* t,char* w){
     char word[strlen(w)];
     strcpy(word,w);
     for(int i=0;i<strlen(word);i++){
@@ -168,7 +184,7 @@ Grammar* make_table(char* filename, Grammar* table){
                     char* token=substring(buffer,start,i-1);
 
                     // Search in the trie to get the index of the string
-                    j=lookup(t1,token);
+                    j=lookUp(t1,token);
 
                     table->non_terminals[j].nt = (NonTerminal)j;
                     // table->non_terminals[j].start = token;
@@ -202,7 +218,7 @@ Grammar* make_table(char* filename, Grammar* table){
                     traverse=table->non_terminals[j].rules[table->non_terminals[j].num_rules-1];
                                        
 
-                    k=lookup(t1,token);
+                    k=lookUp(t1,token);
 
                     traverse -> type = nonterminal;                       // Assign the token an enum of type non-terminal
                     traverse -> s.nt = (NonTerminal)k;                    // Assign the value of non-terminal
@@ -229,7 +245,7 @@ Grammar* make_table(char* filename, Grammar* table){
                     traverse=table->non_terminals[j].rules[table->non_terminals[j].num_rules-1];
 
 
-                    k=lookup(t2,token);
+                    k=lookUp(t2,token);
                     traverse -> type = terminal;                       // Assign the token an enum of type non-terminal
                     traverse -> s.t = (Terminal)k;                    // Assign the value of non-terminal
 
@@ -254,7 +270,7 @@ Grammar* make_table(char* filename, Grammar* table){
                     char* token=substring(buffer,start,i-1);
 
 
-                    k=lookup(t1,token);
+                    k=lookUp(t1,token);
                     traverse -> type = nonterminal;                       // Assign the token an enum of type non-terminal
                     traverse -> s.nt = (NonTerminal)k;                    // Assign the value of non-terminal
 
@@ -270,7 +286,7 @@ Grammar* make_table(char* filename, Grammar* table){
                         i++;
                     char* token=substring(buffer,start,i);
                     
-                    k=lookup(t2,token);
+                    k=lookUp(t2,token);
                     traverse -> type = terminal;                       // Assign the token an enum of type non-terminal
                     traverse -> s.nt = (Terminal)k;                    // Assign the value of non-terminal
 
@@ -300,7 +316,7 @@ Grammar* make_table(char* filename, Grammar* table){
 
 void printTable(Grammar* gm)
 {
-    printf("Printing the structure------------------------------------------------------------------------\n");
+    printf("Printing the Grammar -----------------------------------------------------------------------\n");
     for(int i = 0; i < NON_TERMINALS; i++)
     {
         // printf("%s\n", gm->non_terminals[i].start);
@@ -324,12 +340,47 @@ void printTable(Grammar* gm)
         printf("\n");
         
     }
+    printf("Grammar Printing Finished ------------------------------------------------------------------------\n\n\n\n");
 }
 
 
 //------------------------------------------------------------------------------------------------------------------------------------
 // First and Follow sets computation
 
+
+void setBit(int* firstSet, Terminal t)
+{
+    int k = (int) t;        
+    int pos = k % 32;          
+
+    unsigned int flag = 1;  
+
+    flag = flag << pos;                           // (shifted k positions)
+
+    firstSet[k/32] = firstSet[k/32] | flag;      // Set the bit at the k-th position in firstSet[i]
+}
+
+int TestBit(int* firstSet, Terminal t)
+{
+    int k = (int)t;
+
+    if ( (firstSet[k/32] & (1 << (k%32) )) != 0 )       
+        return 1;         // k-th bit is 1
+    else
+        return 0;         // k-th bit is 0
+}
+
+int* setUnion(int* firstSet1, int* firstSet2)
+{
+    for(int i = 0; i < TERMINALS-1; i++)     // -1 is for not including EPSILON as it is the last item in our terminals enum
+    {
+        if(TestBit(firstSet1,(Terminal)i))
+        {
+            setBit(firstSet2,(Terminal)i);
+        }
+    }
+    return firstSet2;
+}
 
 FirstAndFollow* initializeFirstFollow()
 {
@@ -360,24 +411,6 @@ int checkPrevComputed(FirstAndFollow* F, NonTerminal nt)
     return 0;
 }
 
-void ComputeFirstAndFollowSets (Grammar* G, FirstAndFollow*  F)
-{
-    for(int i = 0; i < NON_TERMINALS; i++)
-    {
-        computeFirst(G, F , G -> non_terminals[i].nt);
-    }
-
-    setBit(F->follow[0].followSet,DOLLAR);  //Include DOLLAR in follow of start symbol
-    for(int i = 1; i < NON_TERMINALS; i++)
-    {
-
-        if(!checkPrevComputed(F, (NonTerminal)i))
-        {
-            computeFollow(G,F,G -> non_terminals[i].nt);
-        }
-    }
-
-}
 
 
 int* computeFollow(Grammar* G, FirstAndFollow* F, NonTerminal nt)
@@ -480,39 +513,27 @@ int* computeFirst(Grammar* G, FirstAndFollow* F, NonTerminal nt)
 }
 
 
-void setBit(int* firstSet, Terminal t)
+
+
+void ComputeFirstAndFollowSets (Grammar* G, FirstAndFollow*  F)
 {
-    int k = (int) t;        
-    int pos = k % 32;          
-
-    unsigned int flag = 1;  
-
-    flag = flag << pos;                           // (shifted k positions)
-
-    firstSet[k/32] = firstSet[k/32] | flag;      // Set the bit at the k-th position in firstSet[i]
-}
-
-int TestBit(int* firstSet, Terminal t)
-{
-    int k = (int)t;
-
-    if ( (firstSet[k/32] & (1 << (k%32) )) != 0 )       
-        return 1;         // k-th bit is 1
-    else
-        return 0;         // k-th bit is 0
-}
-
-int* setUnion(int* firstSet1, int* firstSet2)
-{
-    for(int i = 0; i < TERMINALS-1; i++)     // -1 is for not including EPSILON as it is the last item in our terminals enum
+    for(int i = 0; i < NON_TERMINALS; i++)
     {
-        if(TestBit(firstSet1,(Terminal)i))
+        computeFirst(G, F , G -> non_terminals[i].nt);
+    }
+
+    setBit(F->follow[0].followSet,DOLLAR);  //Include DOLLAR in follow of start symbol
+    for(int i = 1; i < NON_TERMINALS; i++)
+    {
+
+        if(!checkPrevComputed(F, (NonTerminal)i))
         {
-            setBit(firstSet2,(Terminal)i);
+            computeFollow(G,F,G -> non_terminals[i].nt);
         }
     }
-    return firstSet2;
+
 }
+
 
 void printFirstSet(FirstAndFollow* F)
 {
@@ -553,7 +574,7 @@ void printFollowSet(FirstAndFollow* F)
         printf("\n");
     }
 
-    printf("Printing Finished*****************************************************************************\n");
+    printf("Printing Finished*****************************************************************************\n\n\n\n");
 }
 // ParseTable Construction---------------------------------------------------------------------------------------------------------------
 
@@ -649,6 +670,7 @@ void populateParseTable(FirstAndFollow*F, Grammar *G, ParseTable * pt)
 
 void printParseTable(ParseTable* pt)
 {
+    printf("Printing the Parse Table*************************************************************************\n");
     for(int i = 0; i < NON_TERMINALS; i++)
     {
         printf("%s\n", nonTerminalEnumToString[i]);
@@ -659,61 +681,476 @@ void printParseTable(ParseTable* pt)
         }
         printf("\n");
     }
+    printf("ParseTable Printed **********************************************************************************\n\n\n\n");
+
 }
 
 
-//Parse the input source code and build the parse tree
+// Parse the input source code and build the parse tree
 
-// void parseInputSourceCode(char * testCaseFile, ParseTable* table, Grammar* gm)
-// {
-//     //Initialize the lexer by giving the file input
+TreeNode* initialize_internalnode(int tag, char* lexeme, NonTerminal parent ,NonTerminal nt)
+{
+	TreeNode* t = malloc(sizeof(TreeNode));
+	t -> tag = tag;
+	// t -> t.internalnode.lexeme = lexeme;
+	strcpy(t -> t.internalnode.lexeme,lexeme);
+	t -> t.internalnode.parent = parent;
+	t -> t.internalnode.nodesym = nt;
+	t -> t.internalnode.rhs_size = 0;
+
+	return t;
+}
+
+TreeNode* initialize_leafnode(int tag, Terminal ter, NonTerminal parent)
+{
+	TreeNode* t = malloc(sizeof(TreeNode));
+	t -> tag = tag;
+	// t -> t.leafnode.lexeme = token -> lexeme;
+	// strcpy(t -> t.internalnode.lexeme,token->lexeme);
+	// t -> t.leafnode.lineno = token -> lineNo;
+	t -> t.leafnode.t = ter;
+	// if(token -> name == NUM || token -> name == RNUM)
+		// t -> t.leafnode.val = token -> val;
+	t -> t.leafnode.parent = parent;
 
 
-//     //initialize stack
-//     Stack* st = initialize_stack();
-//     // push DOLLAR and Start non-terminals into the stack
-//     push(st,terminal,DOLLAR);
-//     push(st,nonterminal,program);
+	return t;
+}
 
-//     // Get the first token from lexer
-//     Token* tk = getNextToken(fp);
 
-//     while(tk != NULL)
-//     {
-//         StackNode* snode = top(st);
+ParseTree* initialize_tree(){
+    ParseTree* pt=(ParseTree*) malloc(sizeof(ParseTree));
+    pt->levels=0;
+    pt->root=NULL;
+    return pt;
+}
 
-//         int index_lhs_grm = (int)(snode -> s.nt);
-//         int rule_no = table[index_lhs_grm][tk -> name];    // this will give me the rule number corresponding to the given stack top and current token given by lexer
+ParseTree* parseInputSourceCode(char * testCaseFile, ParseTable* table, Grammar* gm,FirstAndFollow* F)
+{
+    //Initialize the lexer by giving the file input
+	FILE *fp = initializeLexer(testCaseFile);
+    int flag1 = 0;
+    int flag2 = 0, flag3 = 0;
+    //initialize stack
+    Stack* st = initialize_stack();
+    Stack* buffer = initialize_stack();
 
-//         if(rule_no == -1)
-//         {
-//             // Generate syntax error
+    ParseTree *pt = initialize_tree();
+    pt -> root = initialize_internalnode(0, "----", ROOT, program);
+	
 
-//         }
+    TreeNode* dummy = malloc(sizeof(TreeNode));
+    dummy -> t.leafnode.t = DOLLAR;
+    dummy -> tag = 2;
+
+    push(st,dummy);
+    push(st,pt -> root);
+
+    // Get the first token from lexer
+    Token* tk = getNextToken(fp);
+
+    // printf("%s\n", TerminalEnumToString[tk -> name]);
+    TreeNode* snode;
+
+    while(tk != NULL && endOfFile != 1)
+    {
+        flag1 = 0;
+        snode = top(st);
+
+        // if(snode -> tag == 0)
+        // 	printf("%s -- Hello\n", nonTerminalEnumToString[snode->t.internalnode.nodesym]);
+        // else
+        // 	printf("%s -- Hello\n", TerminalEnumToString[snode->t.leafnode.t]);
         
-//         RhsNode* rhs = gm -> non-terminals[index_lhs_grm].rules[rule_no];
 
+        if(tk -> name == COMMENTMARK)                                 // If the token returned is a comment or lexical error ignore it
+       	{
+       		tk = getNextToken(fp);
+       		continue;
+       	}
+        if(tk -> name == ERROR)
+        {
+            printf("Line %d: Lexical Error encountered, unexpected token %s\n", tk -> lineNo, tk -> lexeme);
+            tk = getNextToken(fp);
+            flag3 = 1;
+            continue;
+        }
+       	// If top of the stack is non-terminal
+		if (snode -> tag == 0)
+		{
+	        int index_lhs_grm = (int)(snode -> t.internalnode.nodesym);        //Extract the non-terminal enum from it
+	        int rule_no = table->Parse[index_lhs_grm][tk -> name].rule_no;    // this will give me the rule number corresponding to the given stack top and current token given by lexer
+	        // printf("%d\n", rule_no);
 
-//     }
-// }
+	        if(rule_no == -1)                                                // Parse Table entry corresponds to an error
+	        {
+	            // Generate syntax error
+                // printf("Hello\n");
+                if(!flag2 && !flag3)
+	        	  printf("Line %d: Syntax Error in the input-nt\n", tk -> lineNo);
 
+                flag2 = 0;
+                flag3 = 0;
+	        	//Error Recovery using first set method of panic mode
+	        	// tk = getNextToken(fp);
+	        	// while(tk != NULL && TestBit(F->first[index_lhs_grm].firstSet,tk->name) != 1)
+                while(tk != NULL && TestBit(F->follow[index_lhs_grm].followSet,tk->name) != 1)
+	        	{
+	        		// if(tk -> name == SEMICOL)
+	        		// {
+	        			// tk = getNextToken(fp);
+	        			// break;
+	        		// }
+                    if(TestBit(F->first[index_lhs_grm].firstSet,tk->name))
+                    {
+                        flag1 = 1;
+                        break;
+                    }
+                    // printf("%s-- tk--loop\n", TerminalEnumToString[tk->name]);
+	        		tk = getNextToken(fp);
+	        	}
+                if(!flag1)
+                {
+                    pop(st);
+                    snode = top(st);
+                    if(snode -> tag == 1)
+                        continue;
+                    index_lhs_grm = (int)(snode -> t.internalnode.nodesym);
+                }
 
-int main(){
+                if(tk == NULL)
+                {
+                    endOfFile = 0;
+                    return pt;
+                }
+	        }
 
-    Grammar* gm = initialize();
+			// rhs linkedlist
+			rule_no = table->Parse[index_lhs_grm][tk->name].rule_no;
 
-    //Populate Grammar and Print it
-    gm = make_table("grammar.txt",gm);
-    printTable(gm);
+			RHSNode* rhs = gm -> non_terminals[index_lhs_grm].rules[rule_no];
+			RHSNode* tmp = rhs;
+			snode -> t.internalnode.rhs_size = 0;
+			snode -> t.internalnode.children = malloc(sizeof(TreeNode*));
 
-    //Compute first and follow and print them
-    FirstAndFollow* firstFol = initializeFirstFollow();
-    ComputeFirstAndFollowSets(gm,firstFol);
-    printFirstSet(firstFol);
-    printFollowSet(firstFol);
+			if(rhs -> type == terminal && rhs -> s.t == EPSILON)     // If the rule is EPSILON
+			{
+				pop(st);
+                TreeNode* tmpnode = initialize_leafnode(1,tmp -> s.t,snode->t.internalnode.nodesym);
+                snode -> t.internalnode.children = realloc(snode -> t.internalnode.children, sizeof(TreeNode*)*(snode -> t.internalnode.rhs_size+1));
+                snode -> t.internalnode.children[snode -> t.internalnode.rhs_size] = tmpnode;
+                snode -> t.internalnode.rhs_size += 1;
+				continue;
+			}
+			while(tmp -> next)                                   // Using two stacks to push the rule in reverse order
+			{
+				// printf("Hi -- \n");
+				TreeNode* tmpnode;
+				if (tmp -> type == nonterminal)
+				{
+					tmpnode = initialize_internalnode(0, "----", snode->t.internalnode.nodesym, tmp -> s.nt);
+					push(buffer, tmpnode);
+				}
 
-    //Populate Parse Tree and print it
-    ParseTable* pt = initializeParseTable();
-    populateParseTable(firstFol,gm,pt);
-    printParseTable(pt);
+				else
+				{
+					tmpnode = initialize_leafnode(1,tmp -> s.t,snode->t.internalnode.nodesym);
+					push(buffer, tmpnode);
+				}
+
+				snode -> t.internalnode.children = realloc(snode -> t.internalnode.children, sizeof(TreeNode*)*(snode -> t.internalnode.rhs_size+1));
+				snode -> t.internalnode.children[snode -> t.internalnode.rhs_size] = tmpnode;
+                // printf("RHS_SIZE:%d\n",snode->t.internalnode.rhs_size);
+				// printNode(snode->t.internalnode.children[snode -> t.internalnode.rhs_size]);
+                snode -> t.internalnode.rhs_size += 1;
+                
+				tmp = tmp -> next;
+			}
+
+			TreeNode* non_terminal_top = pop(st);  //pop the current NT
+			// printf("Popping %s\n", nonTerminalEnumToString[non_terminal_top->t.internalnode.nodesym]);
+			while(!isempty(buffer))
+			{
+				// printf("Hey\n");
+				push(st, pop(buffer));
+				// printf("%s\n", );
+			// 	if(top(st) -> tag == 0)
+	  //       		printf("%s -- Hi\n", nonTerminalEnumToString[top(st)->t.internalnode.nodesym]);
+	  //       	else if(top(st) -> tag == 1)
+	  //       		printf("%s -- Hi\n", TerminalEnumToString[top(st)->t.leafnode.t]);
+			}
+
+		}
+
+		else
+		{
+			if (snode -> t.leafnode.t == tk -> name)
+			{
+                snode -> t.leafnode.lineno=tk->lineNo;
+                strcpy(snode -> t.leafnode.lexeme,tk->lexeme);
+                if(tk -> name == NUM || tk -> name == RNUM)
+		            snode -> t.leafnode.val = tk -> val;
+				// printf("Here\n");
+				pop(st);              //pop the Terminal
+				tk = getNextToken(fp);	
+				flag2 = 0;
+                flag3 = 0;
+			}
+			else if(snode -> tag == 2 && tk != NULL)
+			{
+				printf("Syntax Error, stack became empty \n");
+                endOfFile = 0;
+				return pt;
+			}
+            else if(snode -> t.leafnode.t != tk -> name)
+            {
+                if(snode -> t.leafnode.t == SEMICOL)
+                {
+                    printf("Line %d: Error in the input as expected %s before this line\n", tk -> lineNo,TerminalEnumToString[snode->t.leafnode.t]);
+                    pop(st);
+                    flag2 = 1;
+                    continue;
+                }
+                printf("Line %d: Error in the input as expected token is %s\n", tk -> lineNo,TerminalEnumToString[snode->t.leafnode.t]);
+
+                //Error Recovery using first set method of panic mode
+                pop(st);
+                flag2 = 1;
+                // tk = getNextToken(fp);
+                // while(tk != NULL && tk -> name != snode -> t.leafnode.t)
+                // {
+                //     if(tk -> name == SEMICOL)
+                //     {
+                //         tk = getNextToken(fp);
+                //         break;
+                //     }
+                    // tk = getNextToken(fp);
+                // }
+
+            }
+		}
+
+    }
+
+    if(snode -> tag == 2)
+    {
+    	printf("Parsing Completed******************************************************************************************\n");
+    }
+    else
+    {
+        pop(st);
+        if(top(st) -> tag == 2)
+        {
+            printf("Parsing Completed Successfully ******************************************************************************************\n");
+        }
+    }
+
+    endOfFile = 0;
+    currLine = 1;
+    return pt;
 }
+
+
+// NaryTree Functions
+
+Queue* initialize_queue(){
+    Queue* q=(Queue*) malloc(sizeof(Queue));
+    q->top=0;
+    q->size=0;
+    q->capacity=50;
+    q->end=0;
+    q->t=(TreeNode**) malloc(sizeof(TreeNode*)*q->capacity);
+
+    return q;
+}
+
+void enQueue(Queue* q, TreeNode* t){
+    if(q->size==q->capacity){
+        q->capacity+=20;
+        q->t=realloc(q->t,sizeof(TreeNode*)*q->capacity);
+    }
+    q->t[q->end]=t;
+    q->end=(q->end+1)%q->capacity;
+    q->size+=1;
+}
+
+TreeNode* deQueue(Queue* q){
+    if(q->size==0){
+        printf("Underflow!");
+        return NULL;
+    }
+    TreeNode* result=q->t[q->top];
+    q->top=(q->top+1)%q->capacity;
+    q->size-=1;
+    return result;
+}
+
+TreeNode* first(Queue* q){
+    if(q->size==0){
+       // printf("Tree is empty");
+        return NULL;
+    }
+    return q->t[q->top];
+}
+
+TreeNode* last(Queue* q){
+    if(q->size==0){
+        //printf("Tree is empty");
+        return NULL;
+    }
+    return q->t[q->end];
+}
+
+
+
+void printNode(TreeNode *node,FILE * fp)
+{
+    // if internal
+    if(node->tag==0){
+        fprintf(fp,"%s\t %20s\t no\t %s\n",node->t.internalnode.lexeme,nonTerminalEnumToString[node->t.internalnode.parent],nonTerminalEnumToString[node->t.internalnode.nodesym]);
+    }
+    // if leaf
+    else if(node->tag==1){
+        fprintf(fp,"%s\t %d\t %s\t %20s\t yes\n ",node->t.leafnode.lexeme,node->t.leafnode.lineno,TerminalEnumToString[node->t.leafnode.t],nonTerminalEnumToString[node->t.leafnode.parent]);
+    }
+
+}
+
+void printParseTree_levelOrder(TreeNode* pt, char* filename)
+{
+    FILE* fptr = fopen(filename,"w");
+
+    TreeNode *tmp = pt;
+    if (!tmp)
+    {
+        return ;
+    }
+
+
+    // level order
+    Queue* q = initialize_queue();
+    TreeNode* dummy = (TreeNode*) malloc(sizeof(TreeNode));
+    dummy -> tag = 2;
+
+    enQueue(q,tmp);
+    enQueue(q,dummy);                           //marks the end of a level
+
+    while(first(q)!=NULL)
+    {
+        tmp=deQueue(q);
+        if(tmp->tag==0)
+        {
+            // printf("size: %d\t",tmp->t.internalnode.rhs_size);
+            for(int i=0;i<tmp->t.internalnode.rhs_size;i++)
+            {
+               // printf("tag: %d\t",tmp->tag);
+                enQueue(q,tmp->t.internalnode.children[i]);
+                //printf("Queue size: %d\t",q->size);
+            }
+            printNode(tmp,fptr);
+        }
+        else if(tmp->tag==1)
+        {
+            // printf("tag: %d\t",tmp->tag);
+            printNode(tmp,fptr);
+        }
+        else if(tmp->tag==2)
+        {
+            // printf("tag: %d\t",tmp->tag);
+            // printf("\n");
+            if(first(q)!=NULL)
+                enQueue(q,dummy);
+        }
+    }
+
+    fclose(fptr);
+}
+
+void printParseTree_inorder(TreeNode* pt , char* filename)
+{
+    FILE* fptr = fopen(filename,"w");
+
+    printParseTree_inorder_util(pt,fptr);
+
+    fclose(fptr);
+}
+
+void printParseTree_inorder_util(TreeNode* pt,FILE* fpt)
+{
+    TreeNode *tmp = pt;
+    if (!tmp)
+    {
+        //printf("Parse Tree empty");
+        return ;
+    }
+
+    //inorder
+    if(tmp -> tag ==0)
+    {
+        if(tmp -> t.internalnode.rhs_size > 0)
+            printParseTree_inorder_util(tmp -> t.internalnode.children[0],fpt);
+        printNode(tmp,fpt);
+        for (int i=1;i<tmp->t.internalnode.rhs_size;i++){
+          //  printf("%d\n",tmp->t.internalnode.rhs_size);
+            printParseTree_inorder_util(tmp->t.internalnode.children[i],fpt);
+          
+        }
+           
+    }
+    else
+    {
+        printNode(tmp,fpt);
+        // printf("\n");
+    }
+    
+}
+
+//**************************************************************************************
+
+Stack* initialize_stack()
+{
+	Stack* st = malloc(sizeof(Stack));
+	st -> top = -1;
+	st -> size = 0;
+	st -> capacity = 100;
+	st -> t = malloc(sizeof(TreeNode*)*st -> capacity);
+	return st;
+}
+
+void push(Stack *st, TreeNode* node)
+{
+	if(st -> size == st-> capacity){
+		st->capacity+=20;
+		st-> t = realloc(st -> t,sizeof(TreeNode*)*st -> capacity);
+	}
+	st->top++;
+	st -> t[st-> top]=node;
+	st -> size += 1;
+}
+
+TreeNode* pop(Stack *st)
+{
+	if (st -> size < 1)
+		return NULL;
+
+	TreeNode *tmp = st -> t[st -> top];
+	st -> top--;
+	st -> size -=1;
+	return tmp;
+}
+
+TreeNode *top(Stack *st)
+{
+	if(st -> size > 0){
+		return st -> t[st -> top];
+	}
+	else
+		return NULL;
+}
+
+int isempty(Stack *st)
+{
+	return st -> size ? 0: 1;
+}
+
+////////////////////////////////////////////////////////////////////

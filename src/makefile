@@ -1,5 +1,2 @@
-run_code: lexer.c
-	gcc -c lexer.c
-	gcc -o run_code lexer.o
-	./run_code
-	rm -f *.o run_code
+stage1exe: driver.c lexer.c parser.c
+	gcc -o stage1exe driver.c lexer.c parser.c

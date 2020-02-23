@@ -1,6 +1,9 @@
-// #include "hashtable.h"
+
 #include "lexer.h"
 #include <string.h>
+
+#define bufferSize 512
+
 
 //Twin Buffer Scheme
 char* firstBuffer;
@@ -13,7 +16,7 @@ int endOfFile = 0;       // denotes that we have read all the characters from th
 HT* hashtable;
 
 
-const char* tokenNameEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY", "START", "END", "DECLARE", "MODULE", "DRIVER", "PROGRAM", "GET_VALUE", "PRINT", 
+char* tokenNameEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRAY", "START", "END", "DECLARE", "MODULE", "DRIVER", "PROGRAM", "GET_VALUE", "PRINT", 
 	"USE", "WITH", "PARAMETERS", "TRUE", "FALSE", "TAKES", "INPUT", "RETURNS", "AND", "OR", "FOR", "IN", "SWITCH", "CASE", "BREAK",
 	"DEFAULT", "WHILE", "PLUS", "MINUS", "MUL", "DIV", "LT", "LE", "GE", "GT", "EQ", "NE", "DEF", "ENDDEF", "DRIVERDEF", "DRIVERENDDEF",
 	"COLON", "RANGEOP", "SEMICOL", "COMMA", "ASSIGNOP", "SQBO", "SQBC", "BO", "BC", "COMMENTMARK","ID","NUM","RNUM","ERROR"};
@@ -22,32 +25,33 @@ const char* tokenNameEnumToString[] = {"INTEGER", "REAL", "BOOLEAN", "OF", "ARRA
 FILE* getStream(FILE* fp)
 {
 	//firstBuffer = secondBuffer;
-
+	// printf("Filling the Buffer---------------------------------------------------------------------------\n");
 	int numChar;
-	numChar = fread(firstBuffer,sizeof(char),15,fp);
-
+	numChar = fread(firstBuffer,sizeof(char),bufferSize-1,fp);
 	if(numChar > 0)
 	{
-		firstBuffer[numChar] = '\0';
-		// for(i = 0; i < strlen(firstBuffer); i++)
-		// 	printf("%c\t", firstBuffer[i]);
-		// printf("\n");
+		firstBuffer[numChar] = '$';
 		return fp;
 	}
 	else
 	{
+		printf("End of File Reached, Closing the file\n");
 		fclose(fp);
 		return NULL;
 	}
 }
 
 
-void generateToken(Token* tk,TokenName name, char str[], int linenum)
+void generateToken(Token* tk,Terminal name, char str[], int linenum)
 {
 	tk -> name = name;
-	// tk -> lexeme = str;
 	strcpy(tk->lexeme,str);
 	tk -> lineNo = linenum;
+	tk -> val = malloc(sizeof(value));
+	if(tk -> name == NUM)
+		tk -> val -> intValue = atoi(str);
+	else if(tk -> name == RNUM)
+		tk -> val -> fValue = atof(str);
 }
 
 
@@ -64,8 +68,9 @@ Token* getNextToken(FILE* fp)
 		if(flag == 1)
 		{
 			break;
-			printf("break\n");
 		}
+		if(endOfFile)
+			return NULL;
 		switch(state)
 		{
 			case 0:
@@ -87,7 +92,7 @@ Token* getNextToken(FILE* fp)
 				{
 					switch(firstBuffer[currPtr])
 					{
-						case '\0':
+						case '$':
 						{
 							fp = getStream(fp);
 							currPtr = 0;
@@ -214,7 +219,7 @@ Token* getNextToken(FILE* fp)
 						currPtr++;
 						currLexemeLength++;
 					}
-					else if(firstBuffer[currPtr] == '\0')
+					else if(firstBuffer[currPtr] == '$')
 					{
 						fp = getStream(fp);
 						currPtr = 0;
@@ -241,7 +246,7 @@ Token* getNextToken(FILE* fp)
 					currLexemeLength++;
 					currPtr++; 
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -283,7 +288,7 @@ Token* getNextToken(FILE* fp)
 					flag = 1;
 					currPtr--;  //retract twice
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -322,7 +327,7 @@ Token* getNextToken(FILE* fp)
 						currPtr++;
 						currLexemeLength++;
 					}
-					else if(firstBuffer[currPtr] == '\0')
+					else if(firstBuffer[currPtr] == '$')
 					{
 						fp = getStream(fp);
 						currPtr = 0;
@@ -348,7 +353,7 @@ Token* getNextToken(FILE* fp)
 					currPtr++;
 					currLexemeLength++;
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -388,7 +393,7 @@ Token* getNextToken(FILE* fp)
 					currPtr++;
 					currLexemeLength++;
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -418,7 +423,7 @@ Token* getNextToken(FILE* fp)
 					currPtr++;
 					currLexemeLength++;
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -451,7 +456,7 @@ Token* getNextToken(FILE* fp)
 						currLexemeLength++;
 
 					}
-					if(firstBuffer[currPtr] == '\0')
+					if(firstBuffer[currPtr] == '$')
 					{
 						fp = getStream(fp);
 						currPtr = 0;
@@ -468,7 +473,7 @@ Token* getNextToken(FILE* fp)
 					else
 						state = 9;
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -503,7 +508,7 @@ Token* getNextToken(FILE* fp)
 						currPtr++;
 						currLexemeLength++;
 					}
-					if(firstBuffer[currPtr] == '\0')
+					if(firstBuffer[currPtr] == '$')
 					{
 						fp = getStream(fp);
 						currPtr = 0;
@@ -521,7 +526,7 @@ Token* getNextToken(FILE* fp)
 					else
 						state = 12; //Retract
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -544,10 +549,10 @@ Token* getNextToken(FILE* fp)
 
 			case 12:
 				strToken[currLexemeLength] = '\0';
+				// If length of identifier exceeds 20 then generate error
 				if(strlen(strToken) > 20)
 				{
 					// printf("Error: %d, length of identifier is greater than 20\n", currLine);
-					flag = 1;
 					state = 44;
 				}
 				else
@@ -581,6 +586,21 @@ Token* getNextToken(FILE* fp)
 					currPtr++;
 					state = 16;	
 				}
+				else if(firstBuffer[currPtr] == '$')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 44;
+					}
+					else
+					{
+						state = 13;
+					}
+				}
 				else
 				{
 					state = 15;  // Retract
@@ -593,6 +613,21 @@ Token* getNextToken(FILE* fp)
 					currLexemeLength++;
 					currPtr++;
 					state = 45;
+				}
+				else if(firstBuffer[currPtr] == '$')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 44;
+					}
+					else
+					{
+						state = 14;
+					}
 				}
 				else
 				{
@@ -632,6 +667,21 @@ Token* getNextToken(FILE* fp)
 					currPtr++;
 					state = 20;	
 				}
+				else if(firstBuffer[currPtr] == '$')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 44;
+					}
+					else
+					{
+						state = 17;
+					}
+				}
 				else
 				{
 					state = 19;  // Retract
@@ -645,6 +695,21 @@ Token* getNextToken(FILE* fp)
 					currLexemeLength++;
 					currPtr++;
 					state = 47;
+				}
+				else if(firstBuffer[currPtr] == '$')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 44;
+					}
+					else
+					{
+						state = 18;
+					}
 				}
 				else
 				{
@@ -676,7 +741,7 @@ Token* getNextToken(FILE* fp)
 					currPtr++;
 					state = 23;
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -714,6 +779,21 @@ Token* getNextToken(FILE* fp)
 					currPtr++;
 					state = 25;
 				}
+				else if(firstBuffer[currPtr] == '$')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 44;
+					}
+					else
+					{
+						state = 24;
+					}
+				}
 				else
 				{
 					//Generate Error Unexpected character
@@ -732,6 +812,21 @@ Token* getNextToken(FILE* fp)
 					currLexemeLength++;
 					currPtr++;
 					state = 27;
+				}
+				else if(firstBuffer[currPtr] == '$')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 44;
+					}
+					else
+					{
+						state = 26;
+					}
 				}
 				else
 				{
@@ -752,7 +847,7 @@ Token* getNextToken(FILE* fp)
 					currLexemeLength++;
 					currPtr++;
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -783,7 +878,7 @@ Token* getNextToken(FILE* fp)
 					currLine++;
 					currPtr++;
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -814,7 +909,7 @@ Token* getNextToken(FILE* fp)
 					currLine++;
 					currPtr++;
 				}
-				else if(firstBuffer[currPtr] == '\0')
+				else if(firstBuffer[currPtr] == '$')
 				{
 					fp = getStream(fp);
 					currPtr = 0;
@@ -897,6 +992,21 @@ Token* getNextToken(FILE* fp)
 					currPtr++;
 					currLexemeLength++;
 				}
+				else if(firstBuffer[currPtr] == '$')
+				{
+					fp = getStream(fp);
+					currPtr = 0;
+						
+					if(fp == NULL)
+					{
+						endOfFile = 1;
+						state = 44;
+					}
+					else
+					{
+						state = 42;
+					}
+				}
 				else
 				{
 					//Generate error
@@ -923,9 +1033,9 @@ Token* getNextToken(FILE* fp)
 HT* generate_hashtable(int s){
    HT* hash=(HT*)malloc(s*sizeof(HT));
    hash->size=s;
-   hash->arr=(entry**) malloc((s)*sizeof(entry*));
+   hash->arr=(hashentry**) malloc((s)*sizeof(hashentry*));
    for(int i=0;i<s;i++){
-       hash->arr[i]=(entry*) malloc(sizeof(entry));
+       hash->arr[i]=(hashentry*) malloc(sizeof(hashentry));
        hash->arr[i]->chain_size=0;
        hash->arr[i]->ptr=NULL;
    }
@@ -940,7 +1050,7 @@ HT* make_array(HT* hash,char** arr, int s){
             j++;
         }
  
-    TokenName arrTokens[] = {INTEGER,REAL,BOOLEAN,OF,ARRAY,START,END,DECLARE,MODULE,DRIVER,PROGRAM,
+    Terminal arrTokens[] = {INTEGER,REAL,BOOLEAN,OF,ARRAY,START,END,DECLARE,MODULE,DRIVER,PROGRAM,
                         GET_VALUE,PRINT,USE,WITH,PARAMETERS,TRUE,FALSE,TAKES,INPUT,RETURNS,AND,OR,
                         FOR,IN,SWITCH,CASE,BREAK,DEFAULT,WHILE};
     
@@ -965,17 +1075,17 @@ HT* make_array(HT* hash,char** arr, int s){
     return hash;
 }
 
-void printTable(HT* hash){
-    for(int i=0;i<hash->size;i++){
-        keyword* temp=hash->arr[i]->ptr;
-        printf("%d :\t",(i+1));
-        while(temp!=NULL){
-            printf("%s\t",temp->token);
-            temp=temp->k;
-        }
-        printf("\n");
-    }
-}
+// void printTable(HT* hash){
+//     for(int i=0;i<hash->size;i++){
+//         keyword* temp=hash->arr[i]->ptr;
+//         printf("%d :\t",(i+1));
+//         while(temp!=NULL){
+//             printf("%s\t",temp->token);
+//             temp=temp->k;
+//         }
+//         printf("\n");
+//     }
+// }
 
 keyword* lookup(HT* hash, char* key){
     int j=0,hash_val=0;
@@ -1065,6 +1175,32 @@ char** populate_keywords(char* filename){
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+FILE* initializeLexer(char* testCaseFile)                         // Used in the ParseInputSourceCode Function
+{
+	FILE* fp = fopen(testCaseFile,"r");
+	if(fp == NULL)
+	{
+		printf("Error in opening file\n");
+	}
+	else
+	{
+		printf("File opened with success\n");
+	}
+
+	firstBuffer = (char*)malloc(sizeof(char)*bufferSize);
+	fp = getStream(fp);
+
+
+	//Construct the hashtable
+	char** keys = populate_keywords("keywords.txt");
+    
+    hashtable = generate_hashtable(41);
+    hashtable = make_array(hashtable,keys,30);
+
+    return fp;
+}
+
+
 
 void printTokens(char * testCaseFile)
 {
@@ -1077,33 +1213,116 @@ void printTokens(char * testCaseFile)
 	{
 		printf("File opened with success\n");
 	}
-	firstBuffer = (char*)malloc(sizeof(char)*15);
+	firstBuffer = (char*)malloc(sizeof(char)*bufferSize);
 	fp = getStream(fp);
 
 
 	//Construct the hashtable
-	char** keys = populate_keywords("../data/keywords.txt");
+	char** keys = populate_keywords("keywords.txt");
     
     hashtable = generate_hashtable(41);
     hashtable = make_array(hashtable,keys,30);
 
     Token* tk = (Token*)getNextToken(fp);
-    while(1)
+    while(endOfFile != 1)
     {
-
     	if(tk->name != COMMENTMARK)
     		printf("Line: %d\t TokenName: %s\t  lexeme: %s\n",tk->lineNo,tokenNameEnumToString[tk->name],tk->lexeme);
-    	if(endOfFile == 1)
-    	{
-    		// printf("%s\n", tokenNameEnumToString[tk->name]);
-    		break;
-    	}
+    	
 		tk = getNextToken(fp);
     }
+    endOfFile = 0;
+    currLine = 1;
     printf("Finished\n");
 }
 
-int main()
+
+//// Remove comments from the input sourceCode file and print on the console
+
+
+char *buffer;
+
+
+FILE* fillBuffer(FILE* fp, char * buffer)
 {
-	printTokens("../data/sample.txt");
+	// printf("Filling the buffer for removing comments -----------------------------------------\n");
+	int numChar = 0;
+	numChar = fread(buffer,sizeof(char),bufferSize-1,fp);
+	if(numChar > 0)
+	{
+		buffer[numChar] = '$';                                // adds a sentinel at the end
+		return fp;
+	}
+	else
+	{
+		fclose(fp);
+		printf("No character left in file\n");
+		return NULL;
+	}
+}
+
+
+// Following function will remove comments from the file and creates a new file having comment-free code
+void removeComments(char* testCaseFile)
+{
+	FILE* fptr1 = fopen(testCaseFile,"r");    //opens the testcase file in read mode
+
+	int file1_ptr = 0;                        //pointer which traverse the buffer
+    buffer = (char*)malloc(sizeof(char)*bufferSize);
+	fptr1 = fillBuffer(fptr1,buffer);                 // Initially load the buffer stream
+	int flag = 0;                             // this will become 1 when we are inside a comment
+	int eof = 0;
+	
+	printf("Started removing comments----------------------------------------------------------------\n");
+	while(1)
+	{
+		if(eof)
+			break;
+		if(buffer[file1_ptr] == '$')
+		{
+			fptr1 = fillBuffer(fptr1,buffer);
+			file1_ptr = 0;
+						
+			if(fptr1 == NULL)
+				eof = 1;	
+		}
+		if(buffer[file1_ptr] == '*' && buffer[file1_ptr+1] == '*')
+		{
+			file1_ptr += 2;
+			flag = 1;
+			while(flag)
+			{
+				if(buffer[file1_ptr] == '*' && buffer[file1_ptr+1] == '*')
+				{
+					file1_ptr += 2;
+					flag = 0;
+					break;
+				}
+				if(buffer[file1_ptr] == '$')
+				{
+					fptr1 = fillBuffer(fptr1,buffer);
+					file1_ptr = 0;
+					if(fptr1 == NULL)
+						eof = 1;
+				}
+				file1_ptr++;
+			}
+		}
+		while(!(buffer[file1_ptr] == '*' && buffer[file1_ptr+1] == '*'))
+		{
+			printf("%c", buffer[file1_ptr]);
+			file1_ptr ++;
+			if(buffer[file1_ptr] == '$')
+			{
+				fptr1 = fillBuffer(fptr1,buffer);
+				file1_ptr = 0;
+				if(fptr1 == NULL)
+				{
+					eof = 1;
+					break;
+				}
+			}
+		}
+	}
+	printf("Finished Removing comments----------------------------------------------------------------\n");
 }
