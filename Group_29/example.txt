@@ -1,0 +1,36 @@
+              Lexeme	               LineNo	            TokenName	        ValuelfNumber	          parentNodeSymbol	           IsLeafNode	                NodeSymbol
+             declare	                    4	              DECLARE	                -----	         moduleDeclaration	              Is Leaf	                     -----
+                ----	                -----	                -----	                -----	        moduleDeclarations	             Not Leaf	         moduleDeclaration
+                    	                    0	               MODULE	                -----	         moduleDeclaration	              Is Leaf	                     -----
+                    	                    0	                   ID	                -----	         moduleDeclaration	              Is Leaf	                     -----
+                    	                    0	              SEMICOL	                -----	         moduleDeclaration	              Is Leaf	                     -----
+                ----	                -----	                -----	                -----	                   program	             Not Leaf	        moduleDeclarations
+                ----	                -----	                -----	                -----	        moduleDeclarations	             Not Leaf	        moduleDeclarations
+                ----	                -----	                -----	                -----	                      ROOT	             Not Leaf	                   program
+                    	                    0	                    e	                -----	              otherModules	              Is Leaf	                     -----
+                ----	                -----	                -----	                -----	                   program	             Not Leaf	              otherModules
+                 <<<	                    5	            DRIVERDEF	                -----	              driverModule	              Is Leaf	                     -----
+                ----	                -----	                -----	                -----	                   program	             Not Leaf	              driverModule
+                    	                    0	               DRIVER	                -----	              driverModule	              Is Leaf	                     -----
+                    	                    0	              PROGRAM	                -----	              driverModule	              Is Leaf	                     -----
+                    	                    0	         DRIVERENDDEF	                -----	              driverModule	              Is Leaf	                     -----
+                ----	                -----	                -----	                -----	              driverModule	             Not Leaf	                 moduleDef
+                  <<	                    5	                  DEF	                -----	                    module	              Is Leaf	                     -----
+                ----	                -----	                -----	                -----	              otherModules	             Not Leaf	                    module
+                    	                    0	               MODULE	                -----	                    module	              Is Leaf	                     -----
+                    	                    0	                   ID	                -----	                    module	              Is Leaf	                     -----
+                    	                    0	               ENDDEF	                -----	                    module	              Is Leaf	                     -----
+                    	                    0	                TAKES	                -----	                    module	              Is Leaf	                     -----
+                    	                    0	                INPUT	                -----	                    module	              Is Leaf	                     -----
+                    	                    0	                 SQBO	                -----	                    module	              Is Leaf	                     -----
+      value_123___16	                    5	                   ID	                -----	               input_plist	              Is Leaf	                     -----
+                ----	                -----	                -----	                -----	                    module	             Not Leaf	               input_plist
+                    	                    0	                COLON	                -----	               input_plist	              Is Leaf	                     -----
+                ----	                -----	                -----	                -----	               input_plist	             Not Leaf	                  dataType
+                ----	                -----	                -----	                -----	               input_plist	             Not Leaf	          input_plist_dash
+                   ]	                   12	                 SQBC	                -----	                    module	              Is Leaf	                     -----
+                    	                    0	              SEMICOL	                -----	                    module	              Is Leaf	                     -----
+                ----	                -----	                -----	                -----	                    module	             Not Leaf	                       ret
+                ----	                -----	                -----	                -----	                    module	             Not Leaf	                 moduleDef
+                ----	                -----	                -----	                -----	                   program	             Not Leaf	              otherModules
+                ----	                -----	                -----	                -----	              otherModules	             Not Leaf	              otherModules
