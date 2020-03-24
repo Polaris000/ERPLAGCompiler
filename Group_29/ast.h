@@ -9,12 +9,14 @@
 
 #ifndef _ast_
 #define _ast_
-#include "astDef.h"
+#include "parserDef.h"
 
 astNode *postOrder_ParseTree(ParseTree *pt);
 void processNode(TreeNode *node);
-void postOrderRecur(ParseTree *pt);
-astNode *createNode(nodeName name, astNode *parent, astNode *sibling, Token *tokenInfo);
-astNode *populateParent();
-astNode *addSibling();
-Children *populateChild(TreeNode *node);
+void postOrderRecur(TreeNode *pt);
+astNode *createNode(nodeName name, astNode *parent, astNode *sibling, TreeNode *tokenInfo);
+void populateParent(astNode *ast);
+void populateChild(TreeNode *node, astNode *ast);
+int isValidterminal(Terminal t);
+
+#endif

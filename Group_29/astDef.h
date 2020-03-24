@@ -20,72 +20,53 @@
 
 typedef enum
 {
-    program,
-    module,
-    Driver_Module, // is two words in our doc
-    input_plist,
-    output_plist,
-    integer,
-    boolean,
-    real,
-    dataType,
-    range_array,
-    ioStmt_get_value,
-    ioStmt_print,
-    var_id_num,
-    num,
-    rnum,
-    true,
-    false,
-    assignmentStmt,
-    lvalueIDStmt,
-    lvalueARRStmt,
-    moduleReuseStmt,
-    optional,
-    idList,
-    expression,
-    arithmeticExpr_dash,
-    bool,
-    arithmeticExpr_recur,
-    term_dash,
-    plus,
-    minus,
-    mul,
-    div,
-    and,
-    or
-    ,
-    gt,
-    lt,
-    ge,
-    le,
-    eq,
-    ne,
-    declareStmt,
-    conditionalStmt,
-    caseStmts,
-    itr_for,
-    itr_while,
-    range
+    program_ast,
+    moduleDec_ast,
+    driverModule_ast,
+    module_ast,
+    input_plist_ast,
+    output_plist_ast,
+    dataType_ast,
+    range_array_ast,
+    ioStmt_get_value_ist,
+    ioStmt_print_ast,
+    var_id_num_ast,
+    assignmentStmt_ast,
+    lvalueIDStmt_ast,
+    lvalueARRStmt_ast,
+    moduleReuseStmt_ast,
+    optional_ast,
+    idList_ast,
+    expression_ast,
+    arithmeticExpr_dash_ast,
+    bool_ast,
+    arithmeticExpr_recur_ast,
+    term_dash_ast,
+    declareStmt_ast,
+    conditionalStmt_ast,
+    caseStmts_ast,
+    itr_for_ast,
+    itr_while_ast,
+    range_ast,
 } nodeName;
 
 typedef struct children Children;
+typedef struct astNode astNode;
 struct children
 {
-    Children *head;
-    Children *tail;
-    Children *next;
+    astNode *head;
+    astNode *tail;
     int children_size;
 };
 
-typedef struct astNode astNode;
 struct astNode
 {
     nodeName n_Name;
     astNode *parent;
     astNode *sibling;
     Children *child_list;
-    Token *tokenInfo;
+    // Token *tokenInfo;
+    Leaf *tokenInfo;
 };
 
 #endif

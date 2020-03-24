@@ -795,6 +795,7 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
                     snode = top(st);
                     if (snode->tag == 1)
                         continue;
+                    // position of NT in enum nodesym
                     index_lhs_grm = (int)(snode->t.internalnode.nodesym);
                 }
 
@@ -809,18 +810,27 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
             // rhs linkedlist
 
             rule_no = table->Parse[index_lhs_grm][tk->name].rule_no;
+            // no rule for that NT and T (error case)
             if (rule_no == -1)
+            {
+                printf("Here\n");
                 continue;
+            }
+
             RHSNode *rhs = gm->non_terminals[index_lhs_grm].rules[rule_no];
             RHSNode *tmp = rhs;
-            snode->rule_no = index_lhs_grm; //store the rule number corresponding to the grammar
+
+            // snode->rule_no1 = index_lhs_grm; //store the rule number corresponding to the grammar
+            snode->rule_no = rule_no;
+            snode->addr = NULL;
+            snode->inh = NULL;
             snode->t.internalnode.rhs_size = 0;
             snode->t.internalnode.children = malloc(sizeof(TreeNode *));
 
             if (rhs->type == terminal && rhs->s.t == EPSILON) // If the rule is EPSILON
             {
                 pop(st);
-                TreeNode *tmpnode = initialize_leafnode(1, tmp->s.t, snode->t.internalnode.nodesym);
+                TreeNode *tmpnode = initialize_leafnode(1, rhs->s.t, snode->t.internalnode.nodesym);
                 snode->t.internalnode.children = realloc(snode->t.internalnode.children, sizeof(TreeNode *) * (snode->t.internalnode.rhs_size + 1));
                 snode->t.internalnode.children[snode->t.internalnode.rhs_size] = tmpnode;
                 snode->t.internalnode.rhs_size += 1;
@@ -854,7 +864,6 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
 
             while (!isempty(buffer))
             {
-
                 push(st, pop(buffer));
             }
         }
@@ -880,7 +889,7 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
                 currLine = 1;
                 return pt;
             }
-            else if (snode->t.leafnode.t != tk->name) //Terminal - Terminal mis-match, Error recovery using Panic Mode
+            else if (snode->t.leafnode.t != tk->name) //Terminal - Terminal miss-match, Error recovery using Panic Mode
             {
                 count++;
                 if (snode->t.leafnode.t == SEMICOL)
@@ -905,7 +914,15 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
     }
     else
     {
-        pop(st);
+        snode = pop(st);
+        snode->rule_no = 1;
+        snode->addr = NULL;
+        snode->inh = NULL;
+        TreeNode *tmpnode = initialize_leafnode(1, EPSILON, snode->t.internalnode.nodesym);
+        snode->t.internalnode.children = realloc(snode->t.internalnode.children, sizeof(TreeNode *) * (snode->t.internalnode.rhs_size + 1));
+        snode->t.internalnode.children[snode->t.internalnode.rhs_size] = tmpnode;
+        snode->t.internalnode.rhs_size += 1;
+
         if (top(st)->tag == 2)
         {
             printf("*************************  Parsing Completed Successfully ******************************\n");
@@ -993,6 +1010,8 @@ void printNode(TreeNode *node, FILE *fp)
             fprintf(fp, "%20s\t %20d\t %20s\t %20d\t %25s\t %20s\t %25s\n", node->t.leafnode.lexeme, node->t.leafnode.lineno, TerminalEnumToString[node->t.leafnode.t], node->t.leafnode.val->intValue, nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
         else if (node->t.leafnode.t == RNUM)
             fprintf(fp, "%20s\t %20d\t %20s\t %5.15f\t %25s\t %20s\t %25s\n", node->t.leafnode.lexeme, node->t.leafnode.lineno, TerminalEnumToString[node->t.leafnode.t], node->t.leafnode.val->fValue, nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
+        else if (node->t.leafnode.t == EPSILON)
+            fprintf(fp, "%20s\t %20d\t %20s\t %20s\t %25s\t %20s\t %25s\n", "----", 0, TerminalEnumToString[node->t.leafnode.t], "-----", nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
         else
             fprintf(fp, "%20s\t %20d\t %20s\t %20s\t %25s\t %20s\t %25s\n", node->t.leafnode.lexeme, node->t.leafnode.lineno, TerminalEnumToString[node->t.leafnode.t], "-----", nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
     }

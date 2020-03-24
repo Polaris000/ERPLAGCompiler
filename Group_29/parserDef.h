@@ -17,6 +17,7 @@
 #include <ctype.h>
 
 #include "lexer.h"
+// #include "astDef.h"
 
 #define NON_TERMINALS 55
 #define TERMINALS 60
@@ -173,7 +174,61 @@ typedef struct trie
 //Parse Tree Construction
 
 typedef struct TreeNode TreeNode;
+//////////////////////////////////////////////////////////
+typedef struct Leaf Leaf;
+typedef enum
+{
+    program_ast,
+    moduleDec_ast,
+    driverModule_ast,
+    module_ast,
+    input_plist_ast,
+    output_plist_ast,
+    dataType_ast,
+    whichId_ast,
+    range_array_ast,
+    ioStmt_get_value_ist,
+    ioStmt_print_ast,
+    var_id_num_ast,
+    assignmentStmt_ast,
+    lvalueIDStmt_ast,
+    lvalueARRStmt_ast,
+    moduleReuseStmt_ast,
+    optional_ast,
+    idList_ast,
+    expression_ast,
+    arithmeticExpr_dash_ast,
+    bool_ast,
+    arithmeticExpr_recur_ast,
+    term_dash_ast,
+    declareStmt_ast,
+    conditionalStmt_ast,
+    caseStmts_ast,
+    itr_for_ast,
+    itr_while_ast,
+    range_ast,
+} nodeName;
 
+typedef struct children Children;
+typedef struct astNode astNode;
+struct children
+{
+    astNode *head;
+    astNode *tail;
+    int children_size;
+};
+
+struct astNode
+{
+    nodeName n_Name;
+    astNode *parent;
+    astNode *sibling;
+    Children *child_list;
+    // Token *tokenInfo;
+    Leaf *tokenInfo;
+};
+
+//////////////////////////////////////////////////////////
 typedef struct internal
 {
     // display info
@@ -187,7 +242,7 @@ typedef struct internal
     TreeNode **children; // array of pointers to children
 } Internal;
 
-typedef struct leaf
+typedef struct Leaf
 {
     // display info
     char lexeme[100];
@@ -205,10 +260,11 @@ typedef union NodeData {
 typedef struct TreeNode
 {
     NodeData t;
-    int rule_no;
     int tag;
 
     // Used for AST
+    // int rule_no1; // Denotes which non terminal
+    int rule_no; // Denotes which rule of the non-terminal
     astNode *addr;
     astNode *inh;
 } TreeNode;
@@ -237,5 +293,7 @@ typedef struct Stack
     int size;
     int capacity;
 } Stack;
+
+////////////////////////////////////////////////
 
 #endif

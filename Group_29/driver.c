@@ -6,53 +6,54 @@
 		2017A7PS0193P -- AYUSH GARG
 */
 
-
 #include "parser.h"
 #include "lexer.h"
+#include "ast.h"
 #include <time.h>
 
-
-void parse_input_inorder(char* testCaseFile,char* createfile)
+void parse_input_inorder(char *testCaseFile, char *createfile)
 {
-	Grammar* gm = initialize();
-	gm = make_table("grammar.txt",gm);
-	FirstAndFollow* firstFol = initializeFirstFollow();
-	ComputeFirstAndFollowSets(gm,firstFol);
-	ParseTable* pt = initializeParseTable();
-	populateParseTable(firstFol,gm,pt);
-	ParseTree* pTree = parseInputSourceCode(testCaseFile,pt,gm,firstFol);
-	printParseTree_inorder(pTree->root,createfile);
+	Grammar *gm = initialize();
+	gm = make_table("grammar.txt", gm);
+	FirstAndFollow *firstFol = initializeFirstFollow();
+	ComputeFirstAndFollowSets(gm, firstFol);
+	ParseTable *pt = initializeParseTable();
+	populateParseTable(firstFol, gm, pt);
+	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol);
+	printParseTree_inorder(pTree->root, createfile);
+
+	astNode *ast = postOrder_ParseTree(pTree);
 }
 
-
-void parse_input_level_order(char* testCaseFile,char* createfile)
+void parse_input_level_order(char *testCaseFile, char *createfile)
 {
-	Grammar* gm = initialize();
-	gm = make_table("grammar.txt",gm);
-	FirstAndFollow* firstFol = initializeFirstFollow();
-	ComputeFirstAndFollowSets(gm,firstFol);
-	ParseTable* pt = initializeParseTable();
-	populateParseTable(firstFol,gm,pt);
-	ParseTree* pTree = parseInputSourceCode(testCaseFile,pt,gm,firstFol);
-	printParseTree_levelOrder(pTree->root,createfile);
+	Grammar *gm = initialize();
+	gm = make_table("grammar.txt", gm);
+	FirstAndFollow *firstFol = initializeFirstFollow();
+	ComputeFirstAndFollowSets(gm, firstFol);
+	ParseTable *pt = initializeParseTable();
+	populateParseTable(firstFol, gm, pt);
+	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol);
+	printParseTree_levelOrder(pTree->root, createfile);
 
+	astNode *ast = postOrder_ParseTree(pTree);
 }
 
 void calc_time(char *testCaseFile)
 {
 	clock_t start_time, end_time;
 
-    double total_CPU_time, total_CPU_time_in_seconds;
+	double total_CPU_time, total_CPU_time_in_seconds;
 
-    start_time = clock();
+	start_time = clock();
 
-    Grammar* gm = initialize();
-	gm = make_table("grammar.txt",gm);
-	FirstAndFollow* firstFol = initializeFirstFollow();
-	ComputeFirstAndFollowSets(gm,firstFol);
-	ParseTable* pt = initializeParseTable();
-	populateParseTable(firstFol,gm,pt);
-	ParseTree* pTree = parseInputSourceCode(testCaseFile,pt,gm,firstFol);
+	Grammar *gm = initialize();
+	gm = make_table("grammar.txt", gm);
+	FirstAndFollow *firstFol = initializeFirstFollow();
+	ComputeFirstAndFollowSets(gm, firstFol);
+	ParseTable *pt = initializeParseTable();
+	populateParseTable(firstFol, gm, pt);
+	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol);
 
 	end_time = clock();
 
@@ -63,16 +64,13 @@ void calc_time(char *testCaseFile)
 	printf("End Time: \t\t\t %lf\n", (double)end_time);
 
 	total_CPU_time = (double)(end_time - start_time);
-    total_CPU_time_in_seconds =   total_CPU_time / (double)CLOCKS_PER_SEC;
+	total_CPU_time_in_seconds = total_CPU_time / (double)CLOCKS_PER_SEC;
 
-    printf("Total CPU time: \t\t %8.10f\n", total_CPU_time);
-    printf("Total CPU time (in sec): \t %8.10f \n", total_CPU_time_in_seconds);
-
+	printf("Total CPU time: \t\t %8.10f\n", total_CPU_time);
+	printf("Total CPU time (in sec): \t %8.10f \n", total_CPU_time_in_seconds);
 }
 
-
-
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	printf(
 		"\t\t\t\t\tNOTICE\n"
@@ -81,8 +79,7 @@ int main(int argc, char* argv[])
 		"* Both lexical and syntax analysis modules have been implemented.\n"
 		"* Parse Tree constructed for syntatically correct code.\n"
 		"* Parse tree printing is implemented using both Inorder and Level Order Traversal.\n"
-		"* Modules work with all the provided testcases including the syntatically incorrect one.\n"
-	);
+		"* Modules work with all the provided testcases including the syntatically incorrect one.\n");
 
 	printf("------------------------------------------------------------------------------------------\n\n");
 
@@ -93,10 +90,10 @@ int main(int argc, char* argv[])
 			"=====\n\n"
 			"The command line argument for execution of the driver should be as follows:\n\n"
 			"\t\t$./stage1exe   testcase.txt   parsetreeOutFile.txt\n\n");
-			exit(0);
+		exit(0);
 	}
 
-	while(1)
+	while (1)
 	{
 		printf("\nPlease choose an option\n");
 		printf("========================= \n\n");
@@ -108,39 +105,37 @@ int main(int argc, char* argv[])
 		printf("Press 5 to get the Parse tree in Level Order\n");
 
 		int option;
-		scanf("%d",&option);
-
+		scanf("%d", &option);
 
 		printf("\n");
 		printf("Selected option: %d\n", option);
 		printf("----------------------\n\n");
 		getchar();
 
-		switch(option)
+		switch (option)
 		{
-			case 0:
-				printf("Exiting...\n");
-				exit(0);
-				break;
-			case 1: 
-				removeComments(argv[1]);
-				break;
-			case 2:
-				printTokens(argv[1]);
-				break;
-			case 3:
-				parse_input_inorder(argv[1],argv[2]);
-    			break;
-    		case 4:
-    			calc_time(argv[1]);
-    			break;
-    		case 5:
-    			parse_input_level_order(argv[1],argv[2]);
-    			break;
-    		default:
-    			printf("Invalid option provided....\n");
-    			continue;
+		case 0:
+			printf("Exiting...\n");
+			exit(0);
+			break;
+		case 1:
+			removeComments(argv[1]);
+			break;
+		case 2:
+			printTokens(argv[1]);
+			break;
+		case 3:
+			parse_input_inorder(argv[1], argv[2]);
+			break;
+		case 4:
+			calc_time(argv[1]);
+			break;
+		case 5:
+			parse_input_level_order(argv[1], argv[2]);
+			break;
+		default:
+			printf("Invalid option provided....\n");
+			continue;
 		}
 	}
-	
 }
