@@ -9,6 +9,11 @@
 
 #include "ast.h"
 
+char *nodeNameEnumToString[] = {"program_ast", "moduleDec_ast", "driverModule_ast", "module_ast", "input_plist_ast", "output_plist_ast", "dataType_ast", "whichId_ast", "range_array_ast", "ioStmt_get_value_ast",
+                                "ioStmt_print_ast", "var_id_num_ast", "moduleDef_ast", "assignmentStmt_ast", "lvalueIDStmt_ast", "lvalueARRStmt_ast",
+                                "moduleReuseStmt_ast", "optional_ast", "idList_ast", "expression_ast", "arithmeticExpr_dash_ast", "bool_ast", "arithmeticExpr_recur_ast", "term_dash_ast", "declareStmt_ast",
+                                "conditionalStmt_ast", "caseStmts_ast", "itr_for_ast", "itr_while_ast", "range_ast", "eps", "plus_ast", "minus_ast", "mul_ast", "div_ast", "and_ast", "or_ast", "num_ast", "rnum_ast", "gt_ast", "lt_ast", "ge_ast", "le_ast", "eq_ast", "ne_ast"};
+
 astNode *postOrder_ParseTree(ParseTree *pt)
 {
     if (pt->root == NULL)
@@ -43,8 +48,8 @@ void postOrderRecur(TreeNode *node)
         }
         // if (node->t.internalnode.nodesym == program)
         //     printf("Here - %s\n", nonTerminalEnumToString[data.internalnode.nodesym]);
-        printf("Hello -- %s -- ", nonTerminalEnumToString[node->t.internalnode.nodesym]);
-        processNode(node);
+        // printf("Hello -- %s -- ", nonTerminalEnumToString[node->t.internalnode.nodesym]);
+        applyASTRule_Node(node);
     }
 }
 
@@ -77,24 +82,31 @@ void populateChild(TreeNode *node, astNode *newNode)
     //    printf("%d\n", size);
     while (size--)
     {
-        // if (node->t.internalnode.nodesym == module)
+        // if (node->t.internalnode.nodesym == driverModule)
         //     printf("%d -- %d\n", i, size);
         temp = node->t.internalnode.children[i]->addr;
         if (node->t.internalnode.children[i]->tag == 0)
         {
-            // if (node->t.internalnode.nodesym == module)
+            // if (node->t.internalnode.nodesym == driverModule)
             //     printf("Alright\n");
             if (j == 0)
             {
                 chi->head = temp;
                 chi->tail = temp;
+                // chi->head->sibling = chi->tail;
+                while (chi->tail->sibling)
+                    chi->tail = chi->tail->sibling;
                 chi->children_size++;
+                // if (node->t.internalnode.nodesym == driverModule)
+                //     printf("Alright1\n");
             }
             else
             {
                 chi->tail->sibling = temp;
                 chi->children_size++;
-                chi->tail = temp;
+                while (chi->tail->sibling)
+                    chi->tail = chi->tail->sibling;
+                // chi->tail = temp;
             }
             j++;
         }
@@ -107,12 +119,17 @@ void populateChild(TreeNode *node, astNode *newNode)
             {
                 chi->head = temp;
                 chi->tail = temp;
+                // while (chi->tail->sibling)
+                //     chi->tail = chi->tail->sibling;
+                // chi->head->sibling = chi->tail;
                 chi->children_size++;
             }
             else
             {
                 chi->tail->sibling = temp;
                 chi->children_size++;
+                // while (chi->tail->sibling)
+                //     chi->tail = chi->tail->sibling;
                 chi->tail = temp;
             }
             j++;
@@ -126,23 +143,26 @@ void populateChild(TreeNode *node, astNode *newNode)
 void populateParent(astNode *ast)
 {
     astNode *temp = ast->child_list->head;
-    while (temp != NULL)
+    int size = ast->child_list->children_size;
+    // if (ast->n_Name == program)
+    //     printf("AllIsWell --%d--%s\n", size,nodeNameEnumToString[]);
+    while (temp)
     {
+        // if (!temp->tokenInfo)
+        //     printf("%s --child--%s\n", nodeNameEnumToString[ast->n_Name], nodeNameEnumToString[temp->n_Name]);
         temp->parent = ast;
         temp = temp->sibling;
     }
 }
 
-void processNode(TreeNode *node)
+void applyASTRule_Node(TreeNode *node)
 {
-    // int rule_no = node->rule_no1;
     int rule_no = node->t.internalnode.nodesym;
-    printf("%d\n", node->rule_no);
+    // printf("%d\n", node->rule_no);
     switch (rule_no)
     {
     case 0: //<program> -> <moduleDeclarations> <otherModules> <driverModule> <otherModules>
     {
-        printf("Hello from program\n");
         astNode *ast = createNode(program_ast, NULL, NULL, NULL);
         populateChild(node, ast);
         populateParent(ast);
@@ -165,7 +185,7 @@ void processNode(TreeNode *node)
         }
         else
         {
-            astNode *ast = createNode(-1, NULL, NULL, NULL);
+            astNode *ast = createNode(eps, NULL, NULL, NULL);
             node->addr = ast;
         }
         break;
@@ -175,7 +195,6 @@ void processNode(TreeNode *node)
         astNode *ast = createNode(moduleDec_ast, NULL, NULL, NULL);
         populateChild(node, ast);
         populateParent(ast);
-
         free(node->t.internalnode.children[0]);
         free(node->t.internalnode.children[1]);
         free(node->t.internalnode.children[3]);
@@ -228,7 +247,7 @@ void processNode(TreeNode *node)
         else
         {
             // node->addr = NULL;
-            astNode *ast = createNode(-1, NULL, NULL, NULL);
+            astNode *ast = createNode(eps, NULL, NULL, NULL);
             node->addr = ast;
         }
 
@@ -326,7 +345,11 @@ void processNode(TreeNode *node)
     }
     case 14: //<moduleDef> ->  START <statements> END
     {
-        node->addr = node->t.internalnode.children[1]->addr;
+        // node->addr = node->t.internalnode.children[1]->addr;
+
+        astNode *ast = createNode(moduleDef_ast, NULL, NULL, NULL);
+        populateChild(node, ast);
+        populateParent(ast);
 
         free(node->t.internalnode.children[0]);
         free(node->t.internalnode.children[1]);
@@ -400,9 +423,13 @@ void processNode(TreeNode *node)
 
             free(node->t.internalnode.children[1]);
         }
+        else if (node->rule_no == 1)
+        {
+            node->addr = createNode(num_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
         else
         {
-            node->addr = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+            node->addr = createNode(rnum_ast, NULL, NULL, node->t.internalnode.children[0]);
         }
         break;
     }
@@ -508,7 +535,7 @@ void processNode(TreeNode *node)
         else
         {
             // node->addr = NULL;
-            astNode *ast = createNode(-1, NULL, NULL, NULL);
+            astNode *ast = createNode(eps, NULL, NULL, NULL);
             node->addr = ast;
         }
         break;
@@ -542,9 +569,28 @@ void processNode(TreeNode *node)
     }
     case 32: //<expression> -> <arithmeticOrBooleanExpr> | <op_plus_minus> <unaryOrExpr>
     {
-        node->addr = node->t.internalnode.children[0]->addr;
+        if (!node->rule_no)
+        {
+            node->addr = node->t.internalnode.children[0]->addr;
 
-        free(node->t.internalnode.children[0]);
+            free(node->t.internalnode.children[0]);
+        }
+        else
+        {
+            // astNode *newNode = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+            astNode *newNode = node->t.internalnode.children[0]->addr;
+            Children *chi = malloc(sizeof(Children));
+            chi->children_size = 0;
+
+            chi->head = node->t.internalnode.children[1]->addr;
+            chi->tail = node->t.internalnode.children[1]->addr;
+            chi->children_size++;
+            chi->head->parent = newNode;
+            newNode->child_list = chi;
+
+            node->addr = newNode;
+            // printf("%s\n", node->addr->child_list->head->tokenInfo->lexeme);
+        }
         break;
     }
     case 33: //<unaryOrExpr> -> BO <arithmeticExpr> BC | <var_id_num>
@@ -609,8 +655,8 @@ void processNode(TreeNode *node)
     {
         if (!node->rule_no)
         {
-            astNode *newNode = createNode(arithmeticExpr_dash_ast, NULL, NULL, node->t.internalnode.children[0]);
-
+            // astNode *newNode = createNode(arithmeticExpr_dash_ast, NULL, NULL, node->t.internalnode.children[0]);
+            astNode *newNode = node->t.internalnode.children[0]->addr;
             Children *chi = malloc(sizeof(Children));
             chi->children_size = 0;
 
@@ -631,16 +677,18 @@ void processNode(TreeNode *node)
     {
         if (!node->rule_no)
         {
-            astNode *newNode = createNode(bool_ast, NULL, NULL, node->t.internalnode.children[0]);
-
+            // astNode *newNode = createNode(bool_ast, NULL, NULL, node->t.internalnode.children[0]);
+            astNode *newNode = node->t.internalnode.children[0]->addr;
             Children *chi = malloc(sizeof(Children));
             chi->children_size = 0;
             if (node->t.internalnode.children[2]->addr == NULL)
             {
                 chi->head = node->t.internalnode.children[1]->addr;
                 chi->tail = node->t.internalnode.children[1]->addr;
+                chi->head->parent = newNode;
                 chi->children_size++;
 
+                newNode->parent = node->addr;
                 newNode->child_list = chi;
                 node->addr = newNode;
             }
@@ -655,7 +703,9 @@ void processNode(TreeNode *node)
                 chi->head = temp;
                 chi->tail = temp;
                 chi->children_size++;
+                chi->head->parent = newNode;
 
+                newNode->parent = node->addr;
                 newNode->child_list = chi;
                 node->addr = newNode;
             }
@@ -689,16 +739,18 @@ void processNode(TreeNode *node)
     {
         if (!node->rule_no)
         {
-            astNode *newNode = createNode(arithmeticExpr_recur_ast, NULL, NULL, node->t.internalnode.children[0]);
-
+            // astNode *newNode = createNode(arithmeticExpr_recur_ast, NULL, NULL, node->t.internalnode.children[0]);
+            astNode *newNode = node->t.internalnode.children[0]->addr;
             Children *chi = malloc(sizeof(Children));
             chi->children_size = 0;
             if (node->t.internalnode.children[2]->addr == NULL)
             {
                 chi->head = node->t.internalnode.children[1]->addr;
                 chi->tail = node->t.internalnode.children[1]->addr;
+                chi->head->parent = newNode;
                 chi->children_size++;
 
+                newNode->parent = node->addr;
                 newNode->child_list = chi;
                 node->addr = newNode;
             }
@@ -713,6 +765,7 @@ void processNode(TreeNode *node)
                 chi->head = temp;
                 chi->tail = temp;
                 chi->children_size++;
+                chi->head->parent = newNode;
 
                 newNode->child_list = chi;
                 node->addr = newNode;
@@ -746,16 +799,18 @@ void processNode(TreeNode *node)
     {
         if (!node->rule_no)
         {
-            astNode *newNode = createNode(term_dash_ast, NULL, NULL, node->t.internalnode.children[0]);
-
+            // astNode *newNode = createNode(term_dash_ast, NULL, NULL, node->t.internalnode.children[0]);
+            astNode *newNode = node->t.internalnode.children[0]->addr;
             Children *chi = malloc(sizeof(Children));
             chi->children_size = 0;
             if (node->t.internalnode.children[2]->addr == NULL)
             {
                 chi->head = node->t.internalnode.children[1]->addr;
                 chi->tail = node->t.internalnode.children[1]->addr;
+                chi->head->parent = newNode;
                 chi->children_size++;
 
+                newNode->parent = node->addr;
                 newNode->child_list = chi;
                 node->addr = newNode;
             }
@@ -770,6 +825,7 @@ void processNode(TreeNode *node)
                 chi->head = temp;
                 chi->tail = temp;
                 chi->children_size++;
+                chi->head->parent = newNode;
 
                 newNode->child_list = chi;
                 node->addr = newNode;
@@ -794,28 +850,73 @@ void processNode(TreeNode *node)
         else
         {
             node->addr = node->t.internalnode.children[0]->addr;
+            node->t.internalnode.children[0]->addr->parent = node->addr;
             free(node->t.internalnode.children[0]);
         }
         break;
     }
     case 43: //<op_plus_minus> ->  PLUS | MINUS
     {
-        node->addr = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+        if (!node->rule_no)
+        {
+            node->addr = createNode(plus_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
+        else
+        {
+            node->addr = createNode(minus_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
         break;
     }
     case 44: //<op_mul_div> -> MUL | DIV
     {
-        node->addr = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+        if (!node->rule_no)
+        {
+            node->addr = createNode(mul_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
+        else
+        {
+            node->addr = createNode(div_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
         break;
     }
     case 45: //<logicalOp> ->  AND | OR
     {
-        node->addr = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+        if (!node->rule_no)
+        {
+            node->addr = createNode(and_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
+        else
+        {
+            node->addr = createNode(or_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
         break;
     }
     case 46: //<relationalOp> ->  GT | LT | GE | LE | EQ | NE
     {
-        node->addr = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+        if (!node->rule_no)
+        {
+            node->addr = createNode(gt_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
+        else if (node->rule_no == 1)
+        {
+            node->addr = createNode(lt_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
+        else if (node->rule_no == 2)
+        {
+            node->addr = createNode(ge_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
+        else if (node->rule_no == 3)
+        {
+            node->addr = createNode(le_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
+        else if (node->rule_no == 4)
+        {
+            node->addr = createNode(eq_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
+        else if (node->rule_no == 5)
+        {
+            node->addr = createNode(ne_ast, NULL, NULL, node->t.internalnode.children[0]);
+        }
         break;
     }
     case 47: //<declareStmt> -> DECLARE <idList> COLON <dataType> SEMICOL
@@ -948,6 +1049,46 @@ void processNode(TreeNode *node)
     }
 }
 
-// int main()
-// {
-// }
+void printAst(astNode *node)
+{
+    printf("%20s\t %20s\t %5s\n\n", "NodeName", "Parent", "LineNo");
+    printAstRecur(node);
+}
+
+void printAstNode(astNode *node)
+{
+    char *parent;
+    if (node->parent == NULL)
+        parent = "NULL";
+    else
+    {
+        parent = nodeNameEnumToString[node->parent->n_Name];
+    }
+    if (!node->tokenInfo)
+        printf("%20s\t %20s\t %5s\n", nodeNameEnumToString[node->n_Name], parent, "---");
+    else
+    {
+        if (node->tokenInfo->t != EPSILON)
+            printf("%20s\t %20s\t %5d\n", node->tokenInfo->lexeme, parent, node->tokenInfo->lineno);
+    }
+}
+
+void printAstRecur(astNode *node)
+{
+    if (node == NULL)
+        return;
+
+    printAstNode(node);
+
+    Children *chi = node->child_list;
+    astNode *temp;
+    if (chi)
+    {
+        temp = chi->head;
+        while (temp)
+        {
+            printAstRecur(temp);
+            temp = temp->sibling;
+        }
+    }
+}

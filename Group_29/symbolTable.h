@@ -10,9 +10,15 @@
 #define _symbolTable_
 
 #include "symbolTableDef.h"
+#include "ast.h"
 
-Table *initialize_Table();
-Node *lookup();
-void insert();
+Table *initialize_table(Node *parent, Table *container);
+int getHash(char *val, int size);
+void insert_in_Table(Node *node, Table *t, int hash);
+Table *insertST(char *val, Table *t, int tag);
+Node *lookUpST(char *val, Table *t);
+Table *processNode(Table *tb, astNode *node);
+Table *populateSymbolTable(astNode *root);
+void populateTableRecur(Table *tb, astNode *root);
 
 #endif

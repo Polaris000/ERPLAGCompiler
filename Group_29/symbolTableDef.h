@@ -7,36 +7,50 @@
         2017A7PS0193P -- AYUSH GARG
 */
 
-#ifndef _astdef_
-#define _astdef_
+#ifndef _symbolTabledef_
+#define _symbolTabledef_
 
-typedef struct Node Node;
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef struct Table Table;
 
 typedef struct block
 {
     char *addr;
-    Node *scope; // to take care of nested scope
+    Table *scope; // to take care of nested scope
     //metadata
-} block;
+} Block;
 
 typedef struct variable
 {
     //metadata
-    char *name;
+    //char *name;
     char *addr;
-    //type
-} variable;
+
+} Variable;
 
 typedef union SymbolTableNode {
-    struct block;
-    struct variable;
+    Block block;
+    Variable variable;
 } SymbolTable;
-;
 
-struct Node
+typedef struct Node
 {
-    union SymbolTableNode;
+    SymbolTable *SymbolTableNode;
     int tag; // to identify the struct used of union
+    char *val;
+    struct Node *next;
+} Node;
+
+struct Table
+{
+    Node **nodes;
+    int num;
+    Node *parent;     //Denotes the source row of parent table
+    Table *container; // Denotes the parent symbol table
+    int size;
 };
 
 #endif
