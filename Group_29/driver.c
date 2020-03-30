@@ -9,6 +9,7 @@
 #include "parser.h"
 #include "lexer.h"
 #include "ast.h"
+#include "symbolTable.h"
 #include <time.h>
 
 void parse_input_inorder(char *testCaseFile, char *createfile)
@@ -34,9 +35,13 @@ void parse_input_level_order(char *testCaseFile, char *createfile)
 	ParseTable *pt = initializeParseTable();
 	populateParseTable(firstFol, gm, pt);
 	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol);
+	printf("Parse Tree created\n");
 	printParseTree_levelOrder(pTree->root, createfile);
-
+	printf("Parse Tree printed\n");
 	astNode *ast = postOrder_ParseTree(pTree);
+	printf("AST Created\n");
+	printAst(ast);
+	Table *tb = populateSymbolTable(ast);
 }
 
 void calc_time(char *testCaseFile)

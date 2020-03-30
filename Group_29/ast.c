@@ -12,7 +12,7 @@
 char *nodeNameEnumToString[] = {"program_ast", "moduleDec_ast", "driverModule_ast", "module_ast", "input_plist_ast", "output_plist_ast", "dataType_ast", "whichId_ast", "range_array_ast", "ioStmt_get_value_ast",
                                 "ioStmt_print_ast", "var_id_num_ast", "moduleDef_ast", "assignmentStmt_ast", "lvalueIDStmt_ast", "lvalueARRStmt_ast",
                                 "moduleReuseStmt_ast", "optional_ast", "idList_ast", "expression_ast", "arithmeticExpr_dash_ast", "bool_ast", "arithmeticExpr_recur_ast", "term_dash_ast", "declareStmt_ast",
-                                "conditionalStmt_ast", "caseStmts_ast", "itr_for_ast", "itr_while_ast", "range_ast", "eps", "plus_ast", "minus_ast", "mul_ast", "div_ast", "and_ast", "or_ast", "num_ast", "rnum_ast", "gt_ast", "lt_ast", "ge_ast", "le_ast", "eq_ast", "ne_ast"};
+                                "conditionalStmt_ast", "caseStmts_ast", "itr_for_ast", "itr_while_ast", "range_ast", "eps", "plus_ast", "minus_ast", "mul_ast", "div_ast", "and_ast", "or_ast", "num_ast", "rnum_ast", "gt_ast", "lt_ast", "ge_ast", "le_ast", "eq_ast", "ne_ast", "index_ast"};
 
 astNode *postOrder_ParseTree(ParseTree *pt)
 {
@@ -94,7 +94,7 @@ void populateChild(TreeNode *node, astNode *newNode)
                 chi->head = temp;
                 chi->tail = temp;
                 // chi->head->sibling = chi->tail;
-                while (chi->tail->sibling)
+                while (chi->tail && chi->tail->sibling)
                     chi->tail = chi->tail->sibling;
                 chi->children_size++;
                 // if (node->t.internalnode.nodesym == driverModule)
@@ -104,7 +104,7 @@ void populateChild(TreeNode *node, astNode *newNode)
             {
                 chi->tail->sibling = temp;
                 chi->children_size++;
-                while (chi->tail->sibling)
+                while (chi->tail && chi->tail->sibling)
                     chi->tail = chi->tail->sibling;
                 // chi->tail = temp;
             }
@@ -307,7 +307,15 @@ void applyASTRule_Node(TreeNode *node)
         case 1:
         case 2:
         {
-            node->addr = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+            // node->addr = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+            astNode *ast = createNode(dataType_ast, NULL, NULL, NULL);
+            node->addr = ast;
+            astNode *temp = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+            Children *chi = malloc(sizeof(Children));
+            chi->head = temp;
+            chi->tail = temp;
+            chi->head->parent = ast;
+            ast->child_list = chi;
             break;
         }
         case 3:
@@ -348,12 +356,15 @@ void applyASTRule_Node(TreeNode *node)
         // node->addr = node->t.internalnode.children[1]->addr;
 
         astNode *ast = createNode(moduleDef_ast, NULL, NULL, NULL);
+
         populateChild(node, ast);
+        printf("Hello\n");
         populateParent(ast);
 
         free(node->t.internalnode.children[0]);
         free(node->t.internalnode.children[1]);
         free(node->t.internalnode.children[2]);
+
         break;
     }
     case 15: //<statements> -> <statement> <statements> | e
@@ -502,7 +513,13 @@ void applyASTRule_Node(TreeNode *node)
     }
     case 27: //<index> ->  NUM | ID
     {
-        node->addr = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+        // node->addr = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+        astNode *newNode = createNode(index_ast, NULL, NULL, NULL);
+        Children *chi = malloc(sizeof(Children));
+        chi->head = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+        chi->tail = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
+        chi->head->parent = newNode;
+        node->addr = newNode;
         break;
     }
     case 28: //<moduleReuseStmt> ->  <optional> USE MODULE ID WITH PARAMETERS <idList> SEMICOL
@@ -993,7 +1010,7 @@ void applyASTRule_Node(TreeNode *node)
     {
         if (!node->rule_no)
         {
-            node->addr = node->t.internalnode.children[2]->addr;
+            node->addr = node->t.internalnode.children[2]->addr; //make a node here for semantic check
 
             free(node->t.internalnode.children[0]);
             free(node->t.internalnode.children[1]);

@@ -20,5 +20,7 @@ Node *lookUpST(char *val, Table *t);
 Table *processNode(Table *tb, astNode *node);
 Table *populateSymbolTable(astNode *root);
 void populateTableRecur(Table *tb, astNode *root);
+void processModule(Table *tb, astNode *node);
+int checkRecursion(astNode *node, Table *tb);
 
 #endif

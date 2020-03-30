@@ -20,15 +20,16 @@ typedef struct block
 {
     char *addr;
     Table *scope; // to take care of nested scope
-    //metadata
+    int defined;
+    decl_required;
 } Block;
 
 typedef struct variable
 {
-    //metadata
-    //char *name;
+    int var_tag; // Denotes whether a variable id normal variable(0) or an array variable(1)
     char *addr;
-
+    int lower_index;
+    int upper_index;
 } Variable;
 
 typedef union SymbolTableNode {

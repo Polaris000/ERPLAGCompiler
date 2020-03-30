@@ -12,11 +12,14 @@
 #include "parserDef.h"
 
 astNode *postOrder_ParseTree(ParseTree *pt);
-void processNode(TreeNode *node);
+void applyASTRule_Node(TreeNode *node);
 void postOrderRecur(TreeNode *pt);
 astNode *createNode(nodeName name, astNode *parent, astNode *sibling, TreeNode *tokenInfo);
 void populateParent(astNode *ast);
 void populateChild(TreeNode *node, astNode *ast);
 int isValidterminal(Terminal t);
+void printAst(astNode *node);
+void printAstNode(astNode *node);
+void printAstRecur(astNode *node);
 
 #endif
