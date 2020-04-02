@@ -41,7 +41,9 @@ void parse_input_level_order(char *testCaseFile, char *createfile)
 	astNode *ast = postOrder_ParseTree(pTree);
 	printf("AST Created\n");
 	printAst(ast);
-	Table *tb = populateSymbolTable(ast);
+	// Table *tb = populateSymbolTable(ast);
+	// printf("Printing Symbol Table--------------------------\n\n");
+	// printSymbolTable(tb);
 }
 
 void calc_time(char *testCaseFile)

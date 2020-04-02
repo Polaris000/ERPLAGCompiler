@@ -12,7 +12,7 @@
 char *nodeNameEnumToString[] = {"program_ast", "moduleDec_ast", "driverModule_ast", "module_ast", "input_plist_ast", "output_plist_ast", "dataType_ast", "whichId_ast", "range_array_ast", "ioStmt_get_value_ast",
                                 "ioStmt_print_ast", "var_id_num_ast", "moduleDef_ast", "assignmentStmt_ast", "lvalueIDStmt_ast", "lvalueARRStmt_ast",
                                 "moduleReuseStmt_ast", "optional_ast", "idList_ast", "expression_ast", "arithmeticExpr_dash_ast", "bool_ast", "arithmeticExpr_recur_ast", "term_dash_ast", "declareStmt_ast",
-                                "conditionalStmt_ast", "caseStmts_ast", "itr_for_ast", "itr_while_ast", "range_ast", "eps", "plus_ast", "minus_ast", "mul_ast", "div_ast", "and_ast", "or_ast", "num_ast", "rnum_ast", "gt_ast", "lt_ast", "ge_ast", "le_ast", "eq_ast", "ne_ast", "index_ast"};
+                                "conditionalStmt_ast", "caseStmts_ast", "itr_for_ast", "itr_while_ast", "range_ast", "eps", "plus_ast", "minus_ast", "mul_ast", "div_ast", "and_ast", "or_ast", "num_ast", "rnum_ast", "gt_ast", "lt_ast", "ge_ast", "le_ast", "eq_ast", "ne_ast", "index_ast", "default_ast"};
 
 astNode *postOrder_ParseTree(ParseTree *pt)
 {
@@ -519,6 +519,7 @@ void applyASTRule_Node(TreeNode *node)
         chi->head = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
         chi->tail = createNode(-1, NULL, NULL, node->t.internalnode.children[0]);
         chi->head->parent = newNode;
+        newNode->child_list = chi;
         node->addr = newNode;
         break;
     }
@@ -777,6 +778,7 @@ void applyASTRule_Node(TreeNode *node)
                 Children *temp_child = temp->child_list;
                 temp_child->head = node->t.internalnode.children[1]->addr;
                 temp_child->head->sibling = temp_child->tail;
+                temp_child->head->parent = temp;
                 temp_child->children_size++;
 
                 chi->head = temp;
@@ -966,9 +968,27 @@ void applyASTRule_Node(TreeNode *node)
     }
     case 49: //<caseStmts> ->  CASE <value> COLON <statements> BREAK SEMICOL <caseStmt>
     {
+        // astNode *ast = createNode(caseStmts_ast, NULL, NULL, NULL);
+        // populateChild(node, ast);
+        // populateParent(ast);
         astNode *ast = createNode(caseStmts_ast, NULL, NULL, NULL);
-        populateChild(node, ast);
-        populateParent(ast);
+        Children *chi = malloc(sizeof(Children));
+        chi->children_size = 0;
+        chi->head = node->t.internalnode.children[1]->addr;
+        chi->tail = node->t.internalnode.children[1]->addr;
+        chi->children_size++;
+
+        chi->tail->sibling = node->t.internalnode.children[3]->addr;
+        chi->children_size++;
+        while (chi->tail)
+        {
+            chi->tail->parent = ast;
+            chi->tail = chi->tail->sibling;
+        }
+
+        ast->child_list = chi;
+        ast->sibling = node->t.internalnode.children[6]->addr;
+        node->addr = ast;
 
         free(node->t.internalnode.children[0]);
         free(node->t.internalnode.children[1]);
@@ -983,9 +1003,28 @@ void applyASTRule_Node(TreeNode *node)
     {
         if (!node->rule_no)
         {
-            node->t.internalnode.children[1]->addr->sibling = node->t.internalnode.children[3]->addr;
-            node->t.internalnode.children[3]->addr->sibling = node->t.internalnode.children[6]->addr;
-            node->addr = node->t.internalnode.children[1]->addr;
+            astNode *ast = createNode(caseStmts_ast, NULL, NULL, NULL);
+            Children *chi = malloc(sizeof(Children));
+            chi->children_size = 0;
+            chi->head = node->t.internalnode.children[1]->addr;
+            chi->tail = node->t.internalnode.children[1]->addr;
+            chi->children_size++;
+
+            chi->tail->sibling = node->t.internalnode.children[3]->addr;
+            chi->children_size++;
+            while (chi->tail)
+            {
+                chi->tail->parent = ast;
+                chi->tail = chi->tail->sibling;
+            }
+
+            ast->child_list = chi;
+            ast->sibling = node->t.internalnode.children[6]->addr;
+            node->addr = ast;
+            // ast->parent = node->addr;
+            // node->t.internalnode.children[1]->addr->sibling = node->t.internalnode.children[3]->addr;
+            // node->t.internalnode.children[3]->addr->sibling = node->t.internalnode.children[6]->addr;
+            // node->addr = node->t.internalnode.children[1]->addr;
 
             free(node->t.internalnode.children[0]);
             free(node->t.internalnode.children[1]);
@@ -1010,7 +1049,10 @@ void applyASTRule_Node(TreeNode *node)
     {
         if (!node->rule_no)
         {
-            node->addr = node->t.internalnode.children[2]->addr; //make a node here for semantic check
+            astNode *ast = createNode(default_ast, NULL, NULL, NULL);
+            populateChild(node, ast);
+            populateParent(ast);
+            // node->addr = node->t.internalnode.children[2]->addr; //make a node here for semantic check
 
             free(node->t.internalnode.children[0]);
             free(node->t.internalnode.children[1]);

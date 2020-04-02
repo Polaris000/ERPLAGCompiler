@@ -14,22 +14,52 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern char *nodeNameEnumToString[];
+
 typedef struct Table Table;
+
+// typedef struct inOut
+// {
+//     char *val;
+//     int assigned; // to take care of whether the output parameter has been assigned inside the module
+//     char *addr;
+//     int var_tag;
+//     int lower_index;
+//     int upper_index;
+// } inOut;
+
+typedef struct List
+{
+    // inOut *head;
+    char *val;
+    int assigned; // to take care of whether the output parameter has been assigned inside the module
+    char *addr;
+    int var_tag;
+    int lower_index;
+    int upper_index;
+    struct List *next;
+} List;
 
 typedef struct block
 {
     char *addr;
     Table *scope; // to take care of nested scope
+    int decl_required;
     int defined;
-    decl_required;
+    int num_for;
+    int num_while;
+    int num_switch;
+    List *input_list;
+    List *output_list;
 } Block;
 
 typedef struct variable
 {
-    int var_tag; // Denotes whether a variable id normal variable(0) or an array variable(1)
+    int var_tag; // Denotes whether a variable id is normal variable(0) or an array variable(1)
     char *addr;
     int lower_index;
     int upper_index;
+    // int assign;     //flag for outputpList in module
 } Variable;
 
 typedef union SymbolTableNode {
