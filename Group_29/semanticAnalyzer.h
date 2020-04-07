@@ -12,7 +12,13 @@
 #include "ast.h"
 #include "symbolTable.h"
 
-void parameter_check(astNode *input_list, astNode *output_list, char *val);
-traverse_AST(astNode *node);
+void parameter_check(astNode *input_list, astNode *output_list, astNode *moduleName, Table *tb);
+void traverse_AST(astNode *node);
+void traverseModule(astNode *node, List *output_list);
+List *retrieveOutList(List *list, char *val);
+Node *lookupID(Table *tb, char *val);
+char *processOperator(nodeName name, char *type1, char *type2);
+char *processAssignmentStmt(astNode *node);
+char *checkArray(Node *node, Leaf *index, int lineNo);
 
-#endif;
+#endif

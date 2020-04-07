@@ -6,7 +6,6 @@
         2017A7PS0128P -- MEET KANANI
         2017A7PS0193P -- AYUSH GARG
 */
-
 #ifndef _symbolTabledef_
 #define _symbolTabledef_
 
@@ -14,19 +13,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+// #include "parserDef.h"
+
 extern char *nodeNameEnumToString[];
-
+typedef struct Leaf Leaf;
 typedef struct Table Table;
-
-// typedef struct inOut
-// {
-//     char *val;
-//     int assigned; // to take care of whether the output parameter has been assigned inside the module
-//     char *addr;
-//     int var_tag;
-//     int lower_index;
-//     int upper_index;
-// } inOut;
 
 typedef struct List
 {
@@ -35,8 +26,8 @@ typedef struct List
     int assigned; // to take care of whether the output parameter has been assigned inside the module
     char *addr;
     int var_tag;
-    int lower_index;
-    int upper_index;
+    Leaf *lower_index;
+    Leaf *upper_index;
     struct List *next;
 } List;
 
@@ -56,22 +47,22 @@ typedef struct block
 typedef struct variable
 {
     int var_tag; // Denotes whether a variable id is normal variable(0) or an array variable(1)
-    char *addr;
-    int lower_index;
-    int upper_index;
-    // int assign;     //flag for outputpList in module
+    char *addr;  //Denotes the Datatype of the variable
+    Leaf *lower_index;
+    Leaf *upper_index;
+    int offset;
 } Variable;
 
 typedef union SymbolTableNode {
-    Block block;
-    Variable variable;
+    Block block;       //Initialize the nested scope
+    Variable variable; //Variable Identifier
 } SymbolTable;
 
 typedef struct Node
 {
     SymbolTable *SymbolTableNode;
-    int tag; // to identify the struct used of union
-    char *val;
+    int tag;   // to identify the struct used of union : 1 - Block, 0 - Variable
+    char *val; //lexeme of the identifier or moduleName
     struct Node *next;
 } Node;
 
@@ -81,7 +72,7 @@ struct Table
     int num;
     Node *parent;     //Denotes the source row of parent table
     Table *container; // Denotes the parent symbol table
-    int size;
+    int size;         //How many entries are present in the table
 };
 
 #endif

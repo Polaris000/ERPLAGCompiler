@@ -62,6 +62,7 @@ astNode *createNode(nodeName name, astNode *parent, astNode *sibling, TreeNode *
     temp->child_list = NULL;
     // temp->tokenInfo = tokenInfo;
     temp->tokenInfo = &(tokenInfo->t.leafnode);
+    temp->tb = NULL;
 
     return temp;
 }
@@ -632,6 +633,7 @@ void applyASTRule_Node(TreeNode *node)
 
             temp_child->head = node->t.internalnode.children[0]->addr;
             temp_child->head->sibling = temp_child->tail;
+            temp_child->head->parent = temp;
             temp_child->children_size++;
 
             node->addr = temp;
@@ -653,6 +655,7 @@ void applyASTRule_Node(TreeNode *node)
 
                 temp_child->head = node->t.internalnode.children[0]->addr;
                 temp_child->head->sibling = temp_child->tail;
+                temp_child->head->parent = temp;
                 temp_child->children_size++;
 
                 node->addr = temp;
@@ -680,6 +683,7 @@ void applyASTRule_Node(TreeNode *node)
 
             chi->head = node->t.internalnode.children[1]->addr;
             chi->tail = node->t.internalnode.children[1]->addr;
+            chi->head->parent = newNode;
             chi->children_size++;
 
             newNode->child_list = chi;
@@ -716,6 +720,7 @@ void applyASTRule_Node(TreeNode *node)
                 Children *temp_child = temp->child_list;
                 temp_child->head = node->t.internalnode.children[1]->addr;
                 temp_child->head->sibling = temp_child->tail;
+                temp_child->head->parent = temp;
                 temp_child->children_size++;
 
                 chi->head = temp;
@@ -743,6 +748,7 @@ void applyASTRule_Node(TreeNode *node)
             Children *temp_child = temp->child_list;
             temp_child->head = node->t.internalnode.children[0]->addr;
             temp_child->head->sibling = temp_child->tail;
+            temp_child->head->parent = temp;
             temp_child->children_size++;
 
             node->addr = temp;
@@ -804,6 +810,7 @@ void applyASTRule_Node(TreeNode *node)
             Children *temp_child = temp->child_list;
             temp_child->head = node->t.internalnode.children[0]->addr;
             temp_child->head->sibling = temp_child->tail;
+            temp_child->head->parent = temp;
             temp_child->children_size++;
 
             node->addr = temp;
@@ -838,6 +845,7 @@ void applyASTRule_Node(TreeNode *node)
                 astNode *temp = node->t.internalnode.children[2]->addr;
                 Children *temp_child = temp->child_list;
                 temp_child->head = node->t.internalnode.children[1]->addr;
+                temp_child->head->parent = temp;
                 temp_child->head->sibling = temp_child->tail;
                 temp_child->children_size++;
 

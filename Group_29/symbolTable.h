@@ -22,5 +22,7 @@ Table *populateSymbolTable(astNode *root);
 void populateTableRecur(Table *tb, astNode *root);
 void processModule(Table *tb, astNode *node);
 int checkRecursion(astNode *node, Table *tb);
+void printSymbolTable(Table *tb, char *str);
+List *createListNode(char *val, char *addr, int var_tag, Leaf *lower_bound, Leaf *upper_bound);
 
 #endif
