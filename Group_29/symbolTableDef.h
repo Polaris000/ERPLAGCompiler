@@ -18,10 +18,10 @@
 extern char *nodeNameEnumToString[];
 typedef struct Leaf Leaf;
 typedef struct Table Table;
+typedef struct trie trie;
 
 typedef struct List
 {
-    // inOut *head;
     char *val;
     int assigned; // to take care of whether the output parameter has been assigned inside the module
     char *addr;
@@ -42,6 +42,9 @@ typedef struct block
     int num_switch;
     List *input_list;
     List *output_list;
+    trie *trie; //used for 'while' loop condition variables
+    int module_overloaded;
+    int flag_module;
 } Block;
 
 typedef struct variable
@@ -74,5 +77,13 @@ struct Table
     Table *container; // Denotes the parent symbol table
     int size;         //How many entries are present in the table
 };
+
+// typedef struct BstWhile bstWhile;
+// struct BstWhile
+// {
+//     astNode *key;
+//     bstWhile *left;
+//     bstWhile *right;
+// };
 
 #endif

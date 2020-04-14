@@ -359,7 +359,7 @@ void applyASTRule_Node(TreeNode *node)
         astNode *ast = createNode(moduleDef_ast, NULL, NULL, NULL);
 
         populateChild(node, ast);
-        printf("Hello\n");
+        // printf("Hello\n");
         populateParent(ast);
 
         free(node->t.internalnode.children[0]);

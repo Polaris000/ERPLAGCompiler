@@ -20,5 +20,7 @@ Node *lookupID(Table *tb, char *val);
 char *processOperator(nodeName name, char *type1, char *type2);
 char *processAssignmentStmt(astNode *node);
 char *checkArray(Node *node, Leaf *index, int lineNo);
+void traverseWhile(astNode *node, Table *tb);
+void check_array_assignment(astNode *node);
 
 #endif

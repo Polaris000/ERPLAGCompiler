@@ -9,7 +9,7 @@
 
 #ifndef _ast_
 #define _ast_
-#include "parserDef.h"
+#include "parser.h"
 // #include "astDef.h"
 
 astNode *postOrder_ParseTree(ParseTree *pt);

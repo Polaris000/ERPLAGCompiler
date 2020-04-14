@@ -9,7 +9,10 @@
 #include "parser.h"
 #include "lexer.h"
 #include "ast.h"
+#include "semanticAnalyzer.h"
 #include "symbolTable.h"
+#include "intermediateCode.h"
+
 #include <time.h>
 
 void parse_input_inorder(char *testCaseFile, char *createfile)
@@ -36,14 +39,17 @@ void parse_input_level_order(char *testCaseFile, char *createfile)
 	populateParseTable(firstFol, gm, pt);
 	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol);
 	printf("Parse Tree created\n");
-	printParseTree_levelOrder(pTree->root, createfile);
-	printf("Parse Tree printed\n");
+	// printParseTree_levelOrder(pTree->root, createfile);
+	// printf("Parse Tree printed\n");
 	astNode *ast = postOrder_ParseTree(pTree);
 	printf("AST Created\n");
 	printAst(ast);
-	// Table *tb = populateSymbolTable(ast);
-	// printf("Printing Symbol Table--------------------------\n\n");
-	// printSymbolTable(tb);
+	Table *tb = populateSymbolTable(ast);
+	printf("-----------------------------------------Symbol Table Populated--------------------------\n\n");
+	printSymbolTable(tb, "");
+	traverse_AST(ast);
+	printf("Semantic Analysis done....\n");
+	generate_assembly_code(ast, "code.asm");
 }
 
 void calc_time(char *testCaseFile)
