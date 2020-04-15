@@ -1,0 +1,10 @@
+<<<driver program>>>
+start
+    declare a,b,c: integer;
+    a := 3;
+    b := 5;
+    c := a+b;
+    **get_value(a);
+        print(a); **
+end
+    
