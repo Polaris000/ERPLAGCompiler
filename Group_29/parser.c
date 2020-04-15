@@ -103,6 +103,7 @@ void insert_trie(trie *t, char *w, int key)
 
     char word[strlen(w)];
     strcpy(word, w);
+
     for (int i = 0; i < strlen(word); i++)
     {
         if ((word[i] >= 'A') && (word[i] <= 'Z'))
@@ -813,7 +814,7 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
             // no rule for that NT and T (error case)
             if (rule_no == -1)
             {
-                printf("Here\n");
+                // printf("Here\n");
                 continue;
             }
 

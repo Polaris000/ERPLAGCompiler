@@ -70,7 +70,7 @@ void traverse_AST(astNode *node)
         flag1 = 0;
         flag2 = 0;
         char *type;
-        // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
+        printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
         if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
         {
             type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling->sibling);
@@ -187,10 +187,11 @@ void traverseModule(astNode *node, List *output_list)
         flag2 = 0;
         char *type;
         Node *typeLhs = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
+        if (typeLhs == NULL)
+            return;
         // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
         if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
         {
-            // printf("Hi\n");
             Node *n = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
             char *check = checkArray(n, node->child_list->head->sibling->child_list->head->child_list->head->tokenInfo, node->child_list->head->tokenInfo->lineno);
 
@@ -202,9 +203,13 @@ void traverseModule(astNode *node, List *output_list)
             if (rhs->n_Name == var_id_num_ast)
             {
                 Node *n = lookupID(node->tb, rhs->child_list->head->tokenInfo->lexeme);
+                if (n == NULL)
+                    printf("%s----\n", rhs->child_list->head->tokenInfo->lexeme);
                 if (n && n->SymbolTableNode->variable.var_tag == 1 && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //Array assignment. Do bound and type check
                 {
+                    // printf("Here\n");
                     check_array_assignment(node);
+                    return;
                 }
                 else if (n && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //expression of type  array_variable = integer
                 {
@@ -513,7 +518,11 @@ char *processOperator(nodeName name, char *type1, char *type2)
         else
         {
             if (strcmp(type1, type2) == 0)
+            {
+                // printf("%s----\n", type1);
                 return type1;
+            }
+
             else
             {
                 return NULL;
@@ -534,7 +543,10 @@ char *processOperator(nodeName name, char *type1, char *type2)
         else
         {
             if (strcmp(type1, type2) == 0)
+            {
+                // printf("%s----\n", "boolean");
                 return "boolean";
+            }
             else
             {
                 return NULL;
@@ -559,6 +571,7 @@ char *processOperator(nodeName name, char *type1, char *type2)
             return NULL;
         else
         {
+            // printf("%s----line 573\n", "boolean");
             return "boolean";
         }
     }
@@ -596,6 +609,7 @@ Node *lookupID(Table *tb, char *val)
                 tempnode->SymbolTableNode->variable.upper_index = in_list->upper_index;
                 tempnode->SymbolTableNode->variable.lower_index = in_list->lower_index;
                 tempnode->SymbolTableNode->variable.var_tag = in_list->var_tag;
+                // printf("%s----%s\n", in_list->addr, in_list->val);
                 return tempnode;
             }
             in_list = in_list->next;
@@ -660,6 +674,36 @@ void traverseWhile(astNode *node, Table *tb)
         // printf("%s---%d\n", val, check);
         if (check == 0)
             tb->parent->SymbolTableNode->block.addr = "true";
+    }
+
+    if (node->n_Name == ioStmt_get_value_ist)
+    {
+        //check whether the condition variable has been assigned any value
+        int check = lookUp(tb->parent->SymbolTableNode->block.trie, node->child_list->head->tokenInfo->lexeme);
+        if (check == 0)
+        {
+            tb->parent->SymbolTableNode->block.addr = "true";
+        }
+    }
+
+    if (node->n_Name == moduleReuseStmt_ast)
+    {
+        if (node->child_list->head->n_Name == optional_ast)
+        {
+            //check whether the condition variable has been assigned any value
+            astNode *out_list = node->child_list->head->child_list->head->child_list->head;
+            while (out_list)
+            {
+                // List *out_node = retrieveOutList(output_list, out_list->tokenInfo->lexeme);
+                int check = lookUp(tb->parent->SymbolTableNode->block.trie, out_list->tokenInfo->lexeme);
+                if (check == 0)
+                {
+                    tb->parent->SymbolTableNode->block.addr = "true";
+                    break;
+                }
+                out_list = out_list->sibling;
+            }
+        }
     }
     Children *chi = node->child_list;
     astNode *temp;

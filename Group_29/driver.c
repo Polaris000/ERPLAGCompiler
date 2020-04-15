@@ -49,7 +49,7 @@ void parse_input_level_order(char *testCaseFile, char *createfile)
 	// printSymbolTable(tb, "");
 	traverse_AST(ast);
 	printf("Semantic Analysis done....\n");
-	generate_assembly_code(ast, "code1.asm");
+	// generate_assembly_code(ast, "code1.asm");
 }
 
 void calc_time(char *testCaseFile)

@@ -1,4 +1,3 @@
-
 /* GROUP No. 29
         2017A7PS0004P -- SUBHAM KUMAR DASH
         2017A7PS0036P -- RAHUL JHA
@@ -17,6 +16,7 @@
 #include <ctype.h>
 
 #include "lexer.h"
+#include "symbolTableDef.h"
 // #include "astDef.h"
 
 #define NON_TERMINALS 55
@@ -244,6 +244,7 @@ struct astNode
     Children *child_list;
     // Token *tokenInfo;
     Leaf *tokenInfo;
+    Table *tb;
 };
 
 //////////////////////////////////////////////////////////
