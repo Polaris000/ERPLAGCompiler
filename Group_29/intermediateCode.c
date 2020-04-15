@@ -25,20 +25,20 @@ void startCode(FILE *fp)
     fprintf(fp, "section .text\n%s%s%s",
             "\tglobal \t driver\n",
             "driver:\n",
-            "\t sub \trsp,8\n");
+            "\tmov \t ebp, esp\n");
 }
 
 void endCode(FILE *fp)
 {
-    fprintf(fp, "\tadd\t rsp,8\n%s%s%s",
-            "\tmov \t ebx, 0\n",
+    fprintf(fp, " %s%s%s"
+                "\tmov \t ebx, 0\n",
             "\tmov \t eax, 1\n",
-            "int \t 80h");
+            "\tint \t 80h \n");
 }
 
 void generate_assembly_code(astNode *root, char *asm_file)
 {
-    FILE *fp = fopen("code.asm", "w");
+    FILE *fp = fopen("code1.asm", "w");
     printf("Here\n");
     fprintf(fp, "%cinclude 'functions.asm'\n", '%');
 
@@ -56,12 +56,14 @@ void generate_assembly_code(astNode *root, char *asm_file)
 
     //uninitialized data segment
     fprintf(fp, "section .bss\n%s",
-            "\tsinput: \t resb \t 255\n");
+            "\tsinput \t resb \t 255\n");
 
     //text segment
+    startCode(fp);
     printf("Here\n");
     generate_asm_ast(root, fp);
     printf("Here\n");
+    endCode(fp);
     fclose(fp);
 }
 
@@ -73,7 +75,7 @@ void generate_asm_ast(astNode *root, FILE *fp)
     {
         temp = temp->sibling;
     }
-    fprintf(fp, "section .text\n");
+    // fprintf(fp, "section .text\n");
     traverseDriverModule(temp->child_list->head, fp);
 }
 
@@ -223,18 +225,18 @@ void evaluateAssignmentStmt(astNode *node, FILE *fp)
         // t1 <- ax
         char *reg = generate_reg_name();
         tempReg *tempreg = initialize_tempreg(reg);
-        fprintf(fp, "\tmov \t [ebp+%d], eax\n", tempreg->offset);
+        fprintf(fp, "\tmov \t [ebp + %d], eax\n", tempreg->offset);
 
         evaluateAssignmentStmt(right, fp);
 
         if (node->n_Name == plus_ast)
         {
-            fprintf(fp, "\tadd \t eax, [ebp+%d]\n", tempreg->offset);
+            fprintf(fp, "\tadd \t eax, [ebp + %d]\n", tempreg->offset);
         }
 
         else if (node->n_Name == minus_ast)
         {
-            fprintf(fp, "\tsub \t eax, [ebp+%d]\n", tempreg->offset);
+            fprintf(fp, "\tsub \t eax, [ebp + %d]\n", tempreg->offset);
         }
 
         else if (node->n_Name == mul_ast)
@@ -274,7 +276,31 @@ tempReg *initialize_tempreg(char *reg)
     temp->reg = reg;
     temp->offset = global_offset;
 
-    global_offset++;
+    global_offset += 4;
 
     return temp;
 }
+
+// void processWhileLoop(astNode *node, FILE *fp)
+// {
+//     int start = get_next_label();
+//     fprintf(fp, "LABEL%d:\n", start);
+
+//     int end = get_next_label();
+//     fprintf(fp, "\tcmp \t eax,0\n");
+//     fprintf(fp, "\tjz \t LABEL%d\n", end);
+
+//     processOtherStmts(node->child_list->head->sibling);
+
+//     fprintf(fp, "\tjmp \t LABEL%d\n", start);
+//     fprintf(fp, "LABEL%d:\n", end);
+// }
+
+// void processOtherStmts(astNode *node)
+// {
+//     while (node)
+//     {
+//         traverseDriverModule(node,fp);
+//         node = node->sibling;
+//     }
+// }

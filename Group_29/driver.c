@@ -43,13 +43,13 @@ void parse_input_level_order(char *testCaseFile, char *createfile)
 	// printf("Parse Tree printed\n");
 	astNode *ast = postOrder_ParseTree(pTree);
 	printf("AST Created\n");
-	printAst(ast);
+	// printAst(ast);
 	Table *tb = populateSymbolTable(ast);
 	printf("-----------------------------------------Symbol Table Populated--------------------------\n\n");
-	printSymbolTable(tb, "");
+	// printSymbolTable(tb, "");
 	traverse_AST(ast);
 	printf("Semantic Analysis done....\n");
-	generate_assembly_code(ast, "code.asm");
+	generate_assembly_code(ast, "code1.asm");
 }
 
 void calc_time(char *testCaseFile)
