@@ -7,9 +7,11 @@
 */
 
 #include "symbolTable.h"
+#include "semanticAnalyzer.h"
 // #include "parser.h"
 // #include "ast.h"
-
+extern int flag1;
+extern int flag2;
 int driver_traversed = 0;
 int global_offset = 0;
 
@@ -165,28 +167,21 @@ Table *insertST(char *val, Table *t, int tag)
 
 Node *lookUpST(char *val, Table *t)
 {
-    // printf("Here---- I am--%s\n", val);
-    // printf("Here-- %s----%d\n", val, t->num);
     int hash = getHash(val, t->num);
 
     Node *temp = t->nodes[hash];
     if (temp != NULL)
-        // printf("Here------%d-----\n", t->num);
 
         if (temp != NULL)
         {
-
             if (strcmp(temp->val, val) == 0)
             {
-                // printf("Here---- I am\n");
                 return temp; // val already exists
             }
             else
             {
-                // printf("Here---- I a2m\n");
                 while (temp->next != NULL)
                 {
-                    // printf("Hi\n");
                     temp = temp->next;
                     if (temp->val == NULL)
                     {
@@ -195,10 +190,8 @@ Node *lookUpST(char *val, Table *t)
                         // printf("%d\n", temp->SymbolTableNode->variable.var_tag);
                     }
 
-                    // printf("%s\n", temp->val);
                     if (strcmp(temp->val, val) == 0)
                     {
-                        // printf("Hi--1\n");
                         return temp; // val already exists
                     }
                 }
@@ -213,16 +206,16 @@ Node *lookUpST(char *val, Table *t)
 
 Table *baseTb; // base table
 
-Table *populateSymbolTable(astNode *root)
+Table *populateSymbolTable(astNode *root, error_list *list)
 {
 
     baseTb = initialize_table(NULL, NULL); //creates the base table
-    populateTableRecur(baseTb, root);
+    populateTableRecur(baseTb, root, list);
 
     return baseTb;
 }
 
-void populateTableRecur(Table *tb, astNode *root)
+void populateTableRecur(Table *tb, astNode *root, error_list *list)
 {
     //preorder traversal
     if (root == NULL)
@@ -232,7 +225,7 @@ void populateTableRecur(Table *tb, astNode *root)
     //     check = lookUpST(root->child_list->head->tokenInfo->lexeme, baseTb);
     if (!(root->n_Name == driverModule_ast && tb->parent && strcmp(tb->parent->val, "drivermodule") == 0))
     {
-        tb = processNode(tb, root);
+        tb = processNode(tb, root, list);
     }
     else
     {
@@ -260,14 +253,14 @@ void populateTableRecur(Table *tb, astNode *root)
         }
         while (temp)
         {
-            populateTableRecur(tb, temp);
+            populateTableRecur(tb, temp, list);
 
             temp = temp->sibling;
         }
     }
 }
 
-Table *processNode(Table *tb, astNode *node)
+Table *processNode(Table *tb, astNode *node, error_list *list)
 {
     //check for module declarations
     if (node->n_Name == moduleDec_ast)
@@ -279,15 +272,24 @@ Table *processNode(Table *tb, astNode *node)
         Table *t1 = insertST(temp->tokenInfo->lexeme, tb, 1);
         if (t1 == NULL)
         {
-            printf("Line %d: Redeclaration of module '%s' \n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            // printf("Line %d: Redeclaration of module '%s' \n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Redeclaration of module '%s' \n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            appendError_at_head(list, err, temp->tokenInfo->lineno);
         }
         Node *n = lookUpST(temp->tokenInfo->lexeme, tb);
         n->SymbolTableNode->block.decl_required = 0;
         n->SymbolTableNode->block.defined = 0;
     }
+    else if (node->n_Name == moduleDef_ast)
+    {
+        Node *n = tb->parent;
+        n->SymbolTableNode->block.lower_scope = node->child_list->head->tokenInfo->lineno;
+    }
     else if (node->n_Name == module_ast)
     {
         // printf("Hello----------2\n");
+        // global_offset = 0;
         if (driver_traversed == 0)
         {
             Children *chi = node->child_list;
@@ -302,11 +304,14 @@ Table *processNode(Table *tb, astNode *node)
                 n->SymbolTableNode->block.decl_required = 1;
                 n->SymbolTableNode->block.defined = -1;
                 n->SymbolTableNode->block.addr = "module";
-                processModule(t1, node);
+                processModule(t1, node, list);
             }
             else if (check && (check->SymbolTableNode->block.scope->size > 0 || check->SymbolTableNode->block.input_list))
             {
-                printf("Line %d: '%s' cannot be overloaded\n", chi->head->tokenInfo->lineno, chi->head->tokenInfo->lexeme);
+                // printf("Line %d: '%s' cannot be overloaded\n", chi->head->tokenInfo->lineno, chi->head->tokenInfo->lexeme);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: '%s' cannot be overloaded\n", chi->head->tokenInfo->lineno, chi->head->tokenInfo->lexeme);
+                appendError_at_head(list, err, chi->head->tokenInfo->lineno);
                 check->SymbolTableNode->block.module_overloaded = 1;
                 return tb;
             }
@@ -318,7 +323,7 @@ Table *processNode(Table *tb, astNode *node)
                 check->SymbolTableNode->block.decl_required = 0;
                 check->SymbolTableNode->block.defined = 1;
                 check->SymbolTableNode->block.addr = "module";
-                processModule(t1, node);
+                processModule(t1, node, list);
             }
         }
         else
@@ -328,7 +333,11 @@ Table *processNode(Table *tb, astNode *node)
             Node *check = lookUpST(chi->head->tokenInfo->lexeme, tb);
             if (check == NULL)
             {
-                printf("Line %d: Module '%s' not declared before the driver module\n", chi->head->tokenInfo->lineno, chi->head->tokenInfo->lexeme);
+                // printf("Line %d: Module '%s' not declared before the driver module\n", chi->head->tokenInfo->lineno, chi->head->tokenInfo->lexeme);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Module '%s' not declared before the driver module\n", chi->head->tokenInfo->lineno, chi->head->tokenInfo->lexeme);
+                appendError_at_head(list, err, chi->head->tokenInfo->lineno);
+
                 Table *t1 = insertST(chi->head->tokenInfo->lexeme, tb, 1);
                 // temp = chi->head->sibling;
                 // printf("%s\n", temp->child_list->head->tokenInfo->lexeme);
@@ -336,11 +345,15 @@ Table *processNode(Table *tb, astNode *node)
                 n->SymbolTableNode->block.decl_required = 1;
                 n->SymbolTableNode->block.defined = -1;
                 n->SymbolTableNode->block.addr = "module";
-                processModule(t1, node);
+                processModule(t1, node, list);
             }
             else if (check && (check->SymbolTableNode->block.scope->size > 0 || check->SymbolTableNode->block.input_list))
             {
-                printf("Line %d: '%s' cannot be overloaded\n", chi->head->tokenInfo->lineno, chi->head->tokenInfo->lexeme);
+                // printf("Line %d: '%s' cannot be overloaded\n", chi->head->tokenInfo->lineno, chi->head->tokenInfo->lexeme);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: '%s' cannot be overloaded\n", chi->head->tokenInfo->lineno, chi->head->tokenInfo->lexeme);
+                appendError_at_head(list, err, chi->head->tokenInfo->lineno);
+
                 check->SymbolTableNode->block.module_overloaded = 1;
                 return tb;
             }
@@ -353,7 +366,7 @@ Table *processNode(Table *tb, astNode *node)
                 check->SymbolTableNode->block.decl_required = 0;
                 check->SymbolTableNode->block.defined = 1;
                 check->SymbolTableNode->block.addr = "module";
-                processModule(t1, node);
+                processModule(t1, node, list);
             }
         }
         return tb;
@@ -373,20 +386,32 @@ Table *processNode(Table *tb, astNode *node)
         Node *check = lookUpST(ast->tokenInfo->lexeme, parent_table);
         if (check == NULL)
         {
-            printf("Line %d: module '%s' is neither defined nor declared preceding this call\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+            // printf("Line %d: module '%s' is neither defined nor declared preceding this call\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: module '%s' is neither defined nor declared preceding this call\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+            appendError_at_head(list, err, ast->tokenInfo->lineno);
         }
         else if (check->SymbolTableNode->block.decl_required == 0 && strcmp(ast->tokenInfo->lexeme, check->val) != 0)
         {
+            // printf("Here comes\n");
             if (check->SymbolTableNode->block.defined == 0)
                 check->SymbolTableNode->block.decl_required = 1;
             else if (check->SymbolTableNode->block.defined == 1)
-                printf("Line %d: Redundant declaration of module '%s'\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+            {
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Redundant declaration of module '%s'\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+                appendError_at_head(list, err, ast->tokenInfo->lineno);
+            }
+            // printf("Line %d: Redundant declaration of module '%s'\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
         }
 
         int recursion = checkRecursion(node, tb);
         if (recursion)
         {
-            printf("Line %d: Recursive Function call '%s()' encountered\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+            // printf("Line %d: Recursive Function call '%s()' encountered\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Recursive Function call '%s()' encountered\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+            appendError_at_head(list, err, ast->tokenInfo->lineno);
         }
         node->tb = tb;
     }
@@ -406,14 +431,13 @@ Table *processNode(Table *tb, astNode *node)
             Table *t1 = insertST(temp->tokenInfo->lexeme, tb, 0);
             if (t1 == NULL)
             {
-                printf("Line %d: Multiple declaration of variable '%s' in the same scope\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+                // printf("Line %d: Multiple declaration of variable '%s' in the same scope\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Multiple declaration of variable '%s' in the same scope\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+                appendError_at_head(list, err, temp->tokenInfo->lineno);
                 temp = temp->sibling;
                 continue;
             }
-            // else
-            // {
-            //     printf("Hi\n");
-            // }
 
             Node *node = lookUpST(temp->tokenInfo->lexeme, tb);
 
@@ -425,7 +449,25 @@ Table *processNode(Table *tb, astNode *node)
 
                 node->SymbolTableNode->variable.lower_index = grand_chi->child_list->head->tokenInfo;
                 node->SymbolTableNode->variable.upper_index = grand_chi->sibling->child_list->head->tokenInfo;
-                // printf("%s \t %s\n", node->SymbolTableNode->variable.lower_index->lexeme, node->SymbolTableNode->variable.upper_index->lexeme);
+                node->SymbolTableNode->variable.offset = global_offset;
+                if (node->SymbolTableNode->variable.lower_index->t == NUM && node->SymbolTableNode->variable.upper_index->t == NUM) //array is static
+                {
+                    int width = 0;
+                    if (strcmp(temp_type->sibling->tokenInfo->lexeme, "integer") == 0)
+                        width = 1 + (node->SymbolTableNode->variable.upper_index->val->intValue - node->SymbolTableNode->variable.lower_index->val->intValue + 1) * 2;
+                    else if (strcmp(temp_type->sibling->tokenInfo->lexeme, "real") == 0)
+                        width = 1 + (node->SymbolTableNode->variable.upper_index->val->intValue - node->SymbolTableNode->variable.lower_index->val->intValue + 1) * 4;
+                    else if (strcmp(temp_type->sibling->tokenInfo->lexeme, "boolean") == 0)
+                        width = 1 + (node->SymbolTableNode->variable.upper_index->val->intValue - node->SymbolTableNode->variable.lower_index->val->intValue + 1) * 1;
+
+                    global_offset += width;
+                    node->SymbolTableNode->variable.width = width;
+                }
+                else //dynamic array
+                {
+                    global_offset++;
+                    node->SymbolTableNode->variable.width = 1;
+                }
             }
             else
             {
@@ -433,11 +475,21 @@ Table *processNode(Table *tb, astNode *node)
                 node->SymbolTableNode->variable.addr = temp_type->tokenInfo->lexeme;
                 node->SymbolTableNode->variable.offset = global_offset;
                 if (strcmp(temp_type->tokenInfo->lexeme, "integer") == 0)
-                    global_offset += 4;
+                {
+                    global_offset += 2;
+                    node->SymbolTableNode->variable.width = 2;
+                }
+
                 else if (strcmp(temp_type->tokenInfo->lexeme, "real") == 0)
+                {
                     global_offset += 4;
+                    node->SymbolTableNode->variable.width = 4;
+                }
                 else if (strcmp(temp_type->tokenInfo->lexeme, "boolean") == 0)
-                    global_offset++;
+                {
+                    global_offset += 1;
+                    node->SymbolTableNode->variable.width = 1;
+                }
             }
             temp = temp->sibling;
         }
@@ -446,6 +498,7 @@ Table *processNode(Table *tb, astNode *node)
     else if (node->n_Name == input_plist_ast) // module input parameter list
     {
         // printf("Hello----------5inp\n");
+        global_offset = 0;
         astNode *temp = node->child_list->head;
         List *in_list = tb->parent->SymbolTableNode->block.input_list;
         while (temp)
@@ -470,8 +523,9 @@ Table *processNode(Table *tb, astNode *node)
                     in_list = tb->parent->SymbolTableNode->block.input_list;
                 }
             }
-            else
+            else //normal variable
             {
+
                 List *templist = createListNode(temp->tokenInfo->lexeme, temp_child->tokenInfo->lexeme, 0, NULL, NULL);
 
                 if (in_list != NULL)
@@ -488,6 +542,8 @@ Table *processNode(Table *tb, astNode *node)
             }
             temp = temp->sibling->sibling;
         }
+        if (node->sibling->n_Name != output_plist_ast)
+            global_offset = 0;
     }
     else if (node->n_Name == output_plist_ast) //Inside module
     {
@@ -513,10 +569,12 @@ Table *processNode(Table *tb, astNode *node)
             temp = temp->sibling;
             temp = temp->sibling;
         }
+
+        global_offset = 0;
     }
 
     //check for variable use
-    else if (node->tokenInfo != NULL && node->tokenInfo->t == ID && node->parent->parent->n_Name != declareStmt_ast && node->parent->n_Name != moduleDec_ast && node->parent->n_Name != moduleReuseStmt_ast && node->parent->n_Name != input_plist_ast && node->parent->n_Name != output_plist_ast && node->parent->n_Name != conditionalStmt_ast)
+    else if (node->tokenInfo != NULL && node->tokenInfo->t == ID && node->parent->parent->n_Name != declareStmt_ast && node->parent->n_Name != moduleDec_ast && node->parent->n_Name != moduleReuseStmt_ast && node->parent->n_Name != input_plist_ast && node->parent->n_Name != output_plist_ast && node->parent->n_Name != conditionalStmt_ast && node->parent->n_Name != index_ast)
     {
         // printf("Hello----------6\n");
         Table *parent_table = tb;
@@ -561,13 +619,18 @@ Table *processNode(Table *tb, astNode *node)
             }
         }
         if (check == NULL)
-            printf("Line %d: Variable '%s' not declared \n", node->tokenInfo->lineno, node->tokenInfo->lexeme);
+        {
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Variable '%s' is not declared \n", node->tokenInfo->lineno, node->tokenInfo->lexeme);
+            appendError_at_head(list, err, node->tokenInfo->lineno);
+        }
+        // printf("Line %d: Variable '%s' is not declared \n", node->tokenInfo->lineno, node->tokenInfo->lexeme);
     }
     else if (node->n_Name == driverModule_ast)
     {
         driver_traversed = 1;
         Table *t1 = insertST("drivermodule", tb, 1);
-        populateTableRecur(t1, node);
+        populateTableRecur(t1, node, list);
     }
     else if (node->n_Name == itr_for_ast)
     {
@@ -591,7 +654,10 @@ Table *processNode(Table *tb, astNode *node)
 
         if (check == NULL)
         {
-            printf("Line %d: Iterating variable '%s' is not declared\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            // printf("Line %d: Iterating variable '%s' is not declared\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Iterating variable '%s' is not declared\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            appendError_at_head(list, err, temp->tokenInfo->lineno);
         }
 
         t1 = insertST(temp->tokenInfo->lexeme, t1, 0);
@@ -608,13 +674,15 @@ Table *processNode(Table *tb, astNode *node)
         n->SymbolTableNode->variable.lower_index = temp->child_list->head->tokenInfo;
         n->SymbolTableNode->variable.upper_index = temp->child_list->head->sibling->tokenInfo;
         // printf("%s -- %s\n", n->SymbolTableNode->variable.lower_index->lexeme, n->SymbolTableNode->variable.upper_index->lexeme);
-        processModule(t1, node);
+        Node *where_for = lookUpST(stringconcat(itoa(tb->parent->SymbolTableNode->block.num_for - 1), "for"), tb);
+        where_for->SymbolTableNode->block.lower_scope = temp->sibling->tokenInfo->lineno; //store the lower scope
+
+        processModule(t1, node, list);
     }
     else if (node->n_Name == itr_while_ast)
     {
         // printf("Hello----------8\n");
 
-        // char *arr = itoa(tb->parent->SymbolTableNode->block.num_while);
         Table *t1 = insertST(stringconcat(itoa(tb->parent->SymbolTableNode->block.num_while), "while"), tb, 1);
         tb->parent->SymbolTableNode->block.num_while++; //increment the number of while loop encountered so far
 
@@ -622,20 +690,21 @@ Table *processNode(Table *tb, astNode *node)
         astNode *temp = node->child_list->head;
         if (!(temp->n_Name == le_ast || temp->n_Name == ge_ast || temp->n_Name == lt_ast || temp->n_Name == gt_ast || temp->n_Name == eq_ast || temp->n_Name == ne_ast || temp->n_Name == and_ast || temp->n_Name == or_ast))
         {
-            printf("Line %d: Condition for while loop must be a boolean expression\n", temp->tokenInfo->lineno);
+            // printf("Line %d: Condition for while loop must be a boolean expression\n", temp->tokenInfo->lineno);
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Condition for while loop must be a boolean expression\n", temp->tokenInfo->lineno);
+            appendError_at_head(list, err, temp->tokenInfo->lineno);
         }
         Node *n = lookUpST(stringconcat(itoa(tb->parent->SymbolTableNode->block.num_while - 1), "while"), tb);
 
-        // bstWhile *bst = NULL;
-        // populateBST(bst, node->child_list->head);
-        // printf("Here1\n");/
+        n->SymbolTableNode->block.lower_scope = temp->sibling->tokenInfo->lineno; //to store the lower scope
+
         trie *trie = initialize_trie();
         trie = populateTrie(trie, node->child_list->head);
         n->SymbolTableNode->block.trie = trie;
         node->tb = t1;
-        // printf("Here2\n");
 
-        processModule(t1, node);
+        processModule(t1, node, list);
     }
     else if (node->n_Name == conditionalStmt_ast)
     {
@@ -647,7 +716,7 @@ Table *processNode(Table *tb, astNode *node)
         tb->parent->SymbolTableNode->block.num_switch++; //increment the number of switch loop encountered so far
         Children *chi = node->child_list;
         astNode *temp = chi->head;
-
+        n->SymbolTableNode->block.lower_scope = temp->sibling->tokenInfo->lineno; //store the lower scope
         //check whether the conditional variable has been declared or not
         Table *parent_table = tb;
         Node *check;
@@ -660,36 +729,51 @@ Table *processNode(Table *tb, astNode *node)
             }
             parent_table = parent_table->container;
         }
-        int switchFlag = 0;
         if (check == NULL)
-            printf("Line %d: Condition Variable '%s' not declared\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+        {
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Condition Variable '%s' not declared\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            appendError_at_head(list, err, temp->tokenInfo->lineno);
+        }
+        // printf("Line %d: Condition Variable '%s' not declared\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
         else if (strcmp(check->SymbolTableNode->variable.addr, "integer") != 0 && strcmp(check->SymbolTableNode->variable.addr, "boolean") != 0) //check for INteger or boolean
             // printf("Line %d: Condition Variable '%s' has to be of type integer or boolean\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
         {
-            printf("Line %d: switch variable '%s' cannot be of type real\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
-            switchFlag = 1;
+            // printf("Line %d: switch variable '%s' cannot be of type real\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: switch variable '%s' cannot be of type real\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            appendError_at_head(list, err, temp->tokenInfo->lineno);
+        }
+        else if (check->SymbolTableNode->variable.var_tag == 1)
+        {
+            // printf("Line %d: switch variable '%s' cannot be of type array\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: switch variable '%s' cannot be of type array\n", temp->tokenInfo->lineno, temp->tokenInfo->lexeme);
+            appendError_at_head(list, err, temp->tokenInfo->lineno);
         }
         else
         {
             n->SymbolTableNode->block.addr = check->SymbolTableNode->variable.addr;
         }
-        // if (switchFlag == 0)
-        // {
-        // //If condition variable is of type Integer then default is compulsory
-        // if (strcmp(check->SymbolTableNode->variable.addr, "integer") == 0 && chi->tail->n_Name != default_ast)
-        //     printf("Line %d: default statement is missing- the type of switch variable is integer\n", temp->tokenInfo->lineno);
-        // else if (strcmp(check->SymbolTableNode->variable.addr, "boolean") == 0 && chi->tail->n_Name == default_ast)
-        //     printf("Line %d: Presence of default statement is incorrect as condiiton variable type is boolean\n", temp->tokenInfo->lineno);
 
-        // processModule(t1, node);
-        // }
         // //If condition variable is of type Integer then default is compulsory
-        if (strcmp(check->SymbolTableNode->variable.addr, "integer") == 0 && chi->tail->n_Name != default_ast)
-            printf("Line %d: default statement is missing- the type of switch variable is integer\n", temp->tokenInfo->lineno);
-        else if (strcmp(check->SymbolTableNode->variable.addr, "boolean") == 0 && chi->tail->n_Name == default_ast)
-            printf("Line %d: Presence of default statement is incorrect as condiiton variable type is boolean\n", temp->tokenInfo->lineno);
+        if (check && strcmp(check->SymbolTableNode->variable.addr, "integer") == 0 && chi->tail->n_Name != default_ast)
+        {
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: default statement is missing- the type of switch variable is integer\n", temp->tokenInfo->lineno);
+            appendError_at_head(list, err, temp->tokenInfo->lineno);
+        }
+        // printf("Line %d: default statement is missing- the type of switch variable is integer\n", temp->tokenInfo->lineno);
+        else if (check && strcmp(check->SymbolTableNode->variable.addr, "boolean") == 0 && chi->tail->n_Name == default_ast)
+        {
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Presence of default statement is incorrect as condiiton variable type is boolean\n", temp->tokenInfo->lineno);
+            appendError_at_head(list, err, temp->tokenInfo->lineno);
+        }
+        // printf("Line %d: Presence of default statement is incorrect as condiiton variable type is boolean\n", temp->tokenInfo->lineno);
 
-        processModule(t1, node);
+        node->tb = t1;
+        processModule(t1, node, list);
     }
 
     else if (node->n_Name == caseStmts_ast)
@@ -699,22 +783,100 @@ Table *processNode(Table *tb, astNode *node)
         Children *chi = node->child_list;
         astNode *temp = chi->head;
         Terminal t;
-        if (strcmp(tb->parent->SymbolTableNode->block.addr, "integer") == 0)
+        // printf("----%s----%d---%s\n", temp->tokenInfo->lexeme, temp->tokenInfo->t, tb->parent->SymbolTableNode->block.addr);
+        if (tb->parent->SymbolTableNode->block.addr && strcmp(tb->parent->SymbolTableNode->block.addr, "integer") == 0)
         // t = INTEGER;
         {
-            if (temp->tokenInfo->t == NUM)
-                printf("Line %d: Case value is incorrect as condition variable type is %s\n", temp->tokenInfo->lineno, "integer");
+            if (temp->tokenInfo->t != NUM)
+            {
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Case value is incorrect as condition variable type is %s\n", temp->tokenInfo->lineno, "integer");
+                appendError_at_head(list, err, temp->tokenInfo->lineno);
+            }
+            // printf("Line %d: Case value is incorrect as condition variable type is %s\n", temp->tokenInfo->lineno, "integer");
         }
-        else if (strcmp(tb->parent->SymbolTableNode->block.addr, "boolean") == 0)
+        else if (tb->parent->SymbolTableNode->block.addr && strcmp(tb->parent->SymbolTableNode->block.addr, "boolean") == 0)
         {
             if (strcmp(temp->tokenInfo->lexeme, "true") != 0 && strcmp(temp->tokenInfo->lexeme, "false") != 0)
-                printf("Line %d: Case value is incorrect as condition variable type is %s\n", temp->tokenInfo->lineno, "boolean");
+            {
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Case value is incorrect as condition variable type is %s\n", temp->tokenInfo->lineno, "boolean");
+                appendError_at_head(list, err, temp->tokenInfo->lineno);
+            }
+            // printf("Line %d: Case value is incorrect as condition variable type is %s\n", temp->tokenInfo->lineno, "boolean");
         }
     }
     else if (node->n_Name == var_id_num_ast)
         node->tb = tb;
+
     else if (node->n_Name == assignmentStmt_ast)
+    {
+        // printf("Hello----------11\n");
         node->tb = tb;
+
+        if (node->parent->n_Name == itr_for_ast)
+        {
+            astNode *parent = node->parent;
+            if (strcmp(parent->child_list->head->tokenInfo->lexeme, node->child_list->head->tokenInfo->lexeme) == 0)
+            {
+                // printf("Line %d: 'For' loop variable %s cannot be assigned a value\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: 'For' loop variable %s cannot be assigned a value\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
+                appendError_at_head(list, err, node->child_list->head->tokenInfo->lineno);
+                return tb;
+            }
+        }
+
+        flag1 = 0;
+        flag2 = 0;
+        char *type;
+        Node *typeLhs = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
+        if (typeLhs == NULL)
+            return tb;
+        // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
+        if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
+        {
+            Node *n = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
+            char *check = checkArray(n, node->child_list->head->sibling->child_list->head->child_list->head->tokenInfo, node->child_list->head->tokenInfo->lineno, list);
+
+            type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling->sibling, tb, list);
+        }
+        else //lvalueIDStmt_ast
+        {
+            astNode *rhs = node->child_list->head->sibling->child_list->head->sibling;
+            if (rhs->n_Name == var_id_num_ast)
+            {
+                Node *n = lookupID(node->tb, rhs->child_list->head->tokenInfo->lexeme);
+                if (n == NULL)
+                    printf("%s----\n", rhs->child_list->head->tokenInfo->lexeme);
+                if (n && n->SymbolTableNode->variable.var_tag == 1 && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //Array assignment. Do bound and type check
+                {
+                    // printf("Here\n");
+                    check_array_assignment(node, list);
+                    return tb;
+                }
+                else if (n && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //expression of type  array_variable = integer
+                {
+                    // printf("Line %d: Variables '%s' and '%s' are of different types\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme, rhs->child_list->head->tokenInfo->lexeme);
+                    char *err = malloc(sizeof(char) * 200);
+                    sprintf(err, "Line %d: Variables '%s' and '%s' are of different types\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme, rhs->child_list->head->tokenInfo->lexeme);
+                    appendError_at_head(list, err, node->child_list->head->tokenInfo->lineno);
+                    return tb;
+                }
+            }
+            // printf("Here\n");
+            type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling, tb, list);
+        }
+
+        if ((type == NULL && flag1 == 0) || (type && strcmp(type, typeLhs->SymbolTableNode->variable.addr) != 0 && flag1 == 0))
+        {
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Type Mismatch\n", node->child_list->head->tokenInfo->lineno);
+            appendError_at_head(list, err, node->child_list->head->tokenInfo->lineno);
+        }
+        // printf("Line %d: Type Mismatch\n", node->child_list->head->tokenInfo->lineno);
+    }
+
     else if (node->n_Name == ioStmt_print_ast)
         node->tb = tb;
     else if (node->n_Name == ioStmt_get_value_ist)
@@ -730,7 +892,7 @@ Table *processNode(Table *tb, astNode *node)
     return tb;
 }
 
-void processModule(Table *tb, astNode *node)
+void processModule(Table *tb, astNode *node, error_list *list)
 {
     // printf("Hello from ModuleProcess\n");
     if (node == NULL)
@@ -741,7 +903,7 @@ void processModule(Table *tb, astNode *node)
         // printf("Hello from modules populate\n");
         // if (node->n_Name == conditionalStmt_ast)
         //     printf("%s\n", nodeNameEnumToString[node->n_Name]);
-        tb = processNode(tb, node);
+        tb = processNode(tb, node, list);
     }
     else
     {
@@ -783,13 +945,43 @@ void processModule(Table *tb, astNode *node)
         }
         while (temp)
         {
-            processModule(tb, temp);
+            processModule(tb, temp, list);
             temp = temp->sibling;
         }
     }
 }
 
-void printSymbolTable(Table *tb, char *str)
+void printSymbolTable(Table *tb)
+{
+    printf("%10s \t %20s \t %5s \t %5s \t %8s \t %8s \t %8s \t %8s \t %5s \t %5s\n",
+           "variable_name", "scope(module_name)", "scope(line_num)", "width", "isArray", "static_or_dynamic", "range_lexemes",
+           "type_of_element", "offset", "nesting_level");
+
+    printSymbolTableUtil(tb);
+}
+
+void printTableEntry(Node *n, Table *tb)
+{
+    Table *parentTable = tb;
+    while (parentTable->container && parentTable->container->parent)
+    {
+        parentTable = parentTable->container;
+    }
+    // if (strcmp(n->SymbolTableNode->variable.addr, "integer") == 0)
+    //     printf("%10s \t %20s \t %5s \t %5s \t %8s \t %8s \t %8s \t %8s \t %5d \t %5s\n",
+    //            n->val, parentTable->parent->val, "---", "2", "---", "---", "---", n->SymbolTableNode->variable.addr, n->SymbolTableNode->variable.offset, "---");
+    // else if (strcmp(n->SymbolTableNode->variable.addr, "real") == 0)
+    //     printf("%10s \t %20s \t %5s \t %5s \t %8s \t %8s \t %8s \t %8s \t %5d \t %5s\n",
+    //            n->val, parentTable->parent->val, "---", "4", "---", "---", "---", n->SymbolTableNode->variable.addr, n->SymbolTableNode->variable.offset, "---");
+
+    // else if (strcmp(n->SymbolTableNode->variable.addr, "boolean") == 0)
+    //     printf("%10s \t %20s \t %5s \t %5s \t %8s \t %8s \t %8s \t %8s \t %5d \t %5s\n",
+    //            n->val, parentTable->parent->val, "---", "1", "---", "---", "---", n->SymbolTableNode->variable.addr, n->SymbolTableNode->variable.offset, "---");
+    printf("%10s \t %20s \t %5s \t %5d \t %8s \t %8s \t %8s \t %8s \t %5d \t %5s\n",
+           n->val, tb->parent->val, "---", n->SymbolTableNode->variable.width, "---", "---", "---", n->SymbolTableNode->variable.addr, n->SymbolTableNode->variable.offset, "---");
+}
+
+void printSymbolTableUtil(Table *tb)
 {
     for (int i = 0; i < tb->num; i++)
     {
@@ -798,34 +990,62 @@ void printSymbolTable(Table *tb, char *str)
         {
             if (node->tag == 0) // for variable
             {
-                printf("%s %15s\t %6s\t %d\n", str, node->val, node->SymbolTableNode->variable.addr, node->SymbolTableNode->variable.offset);
+                // printf("%s %15s\t %6s\t %d\n", node->val, node->SymbolTableNode->variable.addr, node->SymbolTableNode->variable.offset);
+                printTableEntry(node, tb);
             }
             else // for block
             {
-                printf("%s %15s\n", str, node->val);
+                // printf("%s %15s\n", str, node->val);
                 // printf("\t %s", node-);
                 if (node->SymbolTableNode->block.input_list)
                 {
-                    List *out_list = node->SymbolTableNode->block.input_list;
-                    printf("%s %s Printing input Parameter List\n", str, str);
-                    while (out_list)
+                    List *in_list = node->SymbolTableNode->block.input_list;
+                    // printf("%s %s Printing input Parameter List\n", str, str);
+                    while (in_list)
                     {
-                        printf("%s%s%s %s \t %s\n", str, str, str, out_list->val, out_list->addr);
-                        out_list = out_list->next;
+                        // printf("%s%s%s %s \t %s\n", str, str, str, in_list->val, in_list->addr);
+
+                        Node *tempnode = malloc(sizeof(Node));
+                        tempnode->val = in_list->val;
+                        tempnode->tag = 0;
+                        tempnode->SymbolTableNode = malloc(sizeof(SymbolTable));
+                        tempnode->SymbolTableNode->variable.addr = in_list->addr;
+                        tempnode->SymbolTableNode->variable.upper_index = in_list->upper_index;
+                        tempnode->SymbolTableNode->variable.lower_index = in_list->lower_index;
+                        tempnode->SymbolTableNode->variable.var_tag = in_list->var_tag;
+                        tempnode->SymbolTableNode->variable.offset = in_list->offset;
+                        tempnode->SymbolTableNode->variable.width = in_list->width;
+
+                        printTableEntry(tempnode, node->SymbolTableNode->block.scope);
+                        in_list = in_list->next;
+                        free(tempnode);
                     }
                 }
                 if (node->SymbolTableNode->block.output_list)
                 {
-                    printf("%s %s Printing output Parameter List\n", str, str);
+                    // printf("%s %s Printing output Parameter List\n", str, str);
                     List *out_list = node->SymbolTableNode->block.output_list;
                     while (out_list)
                     {
-                        printf("%s%s%s %s\t%s\n", str, str, str, out_list->val, out_list->addr);
+                        // printf("%s%s%s %s\t%s\n", str, str, str, out_list->val, out_list->addr);
+                        Node *tempnode = malloc(sizeof(Node));
+                        tempnode->val = out_list->val;
+                        tempnode->tag = 1;
+                        tempnode->SymbolTableNode = malloc(sizeof(SymbolTable));
+                        tempnode->SymbolTableNode->variable.addr = out_list->addr;
+                        tempnode->SymbolTableNode->variable.upper_index = out_list->upper_index;
+                        tempnode->SymbolTableNode->variable.lower_index = out_list->lower_index;
+                        tempnode->SymbolTableNode->variable.var_tag = out_list->var_tag;
+                        tempnode->SymbolTableNode->variable.offset = out_list->offset;
+                        tempnode->SymbolTableNode->variable.width = out_list->width;
+
+                        printTableEntry(tempnode, node->SymbolTableNode->block.scope);
                         out_list = out_list->next;
+                        free(tempnode);
                     }
                 }
 
-                printSymbolTable(node->SymbolTableNode->block.scope, "\t");
+                printSymbolTableUtil(node->SymbolTableNode->block.scope);
             }
             node = node->next;
             printf("\n");
@@ -843,7 +1063,30 @@ List *createListNode(char *val, char *addr, int var_tag, Leaf *lower_bound, Leaf
     temp->upper_index = upper_bound;
     temp->assigned = 0;
     temp->next = NULL;
-
+    if (var_tag == 0 && strcmp(addr, "integer") == 0)
+    {
+        temp->offset = global_offset;
+        global_offset += 2;
+        temp->width = 2;
+    }
+    else if (var_tag == 0 && strcmp(addr, "real") == 0)
+    {
+        temp->offset = global_offset;
+        global_offset += 4;
+        temp->width = 4;
+    }
+    else if (var_tag == 0 && strcmp(addr, "boolean") == 0)
+    {
+        temp->offset = global_offset;
+        global_offset += 1;
+        temp->width = 1;
+    }
+    else if (var_tag == 1)
+    {
+        temp->offset = global_offset;
+        global_offset += 5;
+        temp->width = 5;
+    }
     return temp;
 }
 

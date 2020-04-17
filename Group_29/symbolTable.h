@@ -11,19 +11,22 @@
 
 #include "symbolTableDef.h"
 #include "ast.h"
+#include "semanticAnalyzerDef.h"
 
 Table *initialize_table(Node *parent, Table *container);
 int getHash(char *val, int size);
 void insert_in_Table(Node *node, Table *t, int hash);
 Table *insertST(char *val, Table *t, int tag);
 Node *lookUpST(char *val, Table *t);
-Table *processNode(Table *tb, astNode *node);
-Table *populateSymbolTable(astNode *root);
-void populateTableRecur(Table *tb, astNode *root);
-void processModule(Table *tb, astNode *node);
+Table *processNode(Table *tb, astNode *node, error_list *list);
+Table *populateSymbolTable(astNode *root, error_list *list);
+void populateTableRecur(Table *tb, astNode *root, error_list *list);
+void processModule(Table *tb, astNode *node, error_list *list);
 int checkRecursion(astNode *node, Table *tb);
-void printSymbolTable(Table *tb, char *str);
+void printSymbolTable(Table *tb);
+void printSymbolTableUtil(Table *tb);
 List *createListNode(char *val, char *addr, int var_tag, Leaf *lower_bound, Leaf *upper_bound);
 trie *populateTrie(trie *trie, astNode *node);
+void printTableEntry(Node *n, Table *tb);
 
 #endif

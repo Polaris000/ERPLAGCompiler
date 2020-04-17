@@ -23,7 +23,8 @@ void parse_input_inorder(char *testCaseFile, char *createfile)
 	ComputeFirstAndFollowSets(gm, firstFol);
 	ParseTable *pt = initializeParseTable();
 	populateParseTable(firstFol, gm, pt);
-	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol);
+	int syn_err = 0;
+	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol, &syn_err);
 	printParseTree_inorder(pTree->root, createfile);
 
 	astNode *ast = postOrder_ParseTree(pTree);
@@ -37,19 +38,23 @@ void parse_input_level_order(char *testCaseFile, char *createfile)
 	ComputeFirstAndFollowSets(gm, firstFol);
 	ParseTable *pt = initializeParseTable();
 	populateParseTable(firstFol, gm, pt);
-	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol);
+	int syn_err = 0;
+	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol, &syn_err);
 	printf("Parse Tree created\n");
 	// printParseTree_levelOrder(pTree->root, createfile);
-	// printf("Parse Tree printed\n");
+	printParseTree_inorder(pTree->root, createfile);
+	printf("Parse Tree printed\n");
 	astNode *ast = postOrder_ParseTree(pTree);
 	printf("AST Created\n");
 	// printAst(ast);
-	Table *tb = populateSymbolTable(ast);
+	error_list *errors = init_errors();
+	Table *tb = populateSymbolTable(ast, errors);
 	printf("-----------------------------------------Symbol Table Populated--------------------------\n\n");
-	// printSymbolTable(tb, "");
-	traverse_AST(ast);
+	printSymbolTable(tb);
+	traverse_AST(ast, errors);
+	printSemanticErrors(errors);
 	printf("Semantic Analysis done....\n");
-	generate_assembly_code(ast, "code1.asm");
+	// generate_assembly_code(ast, "code1.asm");
 }
 
 void calc_time(char *testCaseFile)
@@ -66,7 +71,8 @@ void calc_time(char *testCaseFile)
 	ComputeFirstAndFollowSets(gm, firstFol);
 	ParseTable *pt = initializeParseTable();
 	populateParseTable(firstFol, gm, pt);
-	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol);
+	int syn_err = 0;
+	ParseTree *pTree = parseInputSourceCode(testCaseFile, pt, gm, firstFol, &syn_err);
 
 	end_time = clock();
 

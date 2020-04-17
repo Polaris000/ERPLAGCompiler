@@ -68,7 +68,7 @@ astNode *createNode(nodeName name, astNode *parent, astNode *sibling, TreeNode *
 }
 int isValidterminal(Terminal t)
 {
-    if (t == ID || t == NUM || t == RNUM || t == ASSIGNOP)
+    if (t == ID || t == NUM || t == RNUM || t == ASSIGNOP || t == START || t == END)
         return 1;
     return 0;
 }
@@ -362,9 +362,9 @@ void applyASTRule_Node(TreeNode *node)
         // printf("Hello\n");
         populateParent(ast);
 
-        free(node->t.internalnode.children[0]);
+        // free(node->t.internalnode.children[0]);
         free(node->t.internalnode.children[1]);
-        free(node->t.internalnode.children[2]);
+        // free(node->t.internalnode.children[2]);
 
         break;
     }
@@ -968,10 +968,10 @@ void applyASTRule_Node(TreeNode *node)
         free(node->t.internalnode.children[0]);
         free(node->t.internalnode.children[1]);
         free(node->t.internalnode.children[3]);
-        free(node->t.internalnode.children[4]);
+        // free(node->t.internalnode.children[4]);
         free(node->t.internalnode.children[5]);
         free(node->t.internalnode.children[6]);
-        free(node->t.internalnode.children[7]);
+        // free(node->t.internalnode.children[7]);
         break;
     }
     case 49: //<caseStmts> ->  CASE <value> COLON <statements> BREAK SEMICOL <caseStmt>
@@ -1088,8 +1088,8 @@ void applyASTRule_Node(TreeNode *node)
             free(node->t.internalnode.children[3]);
             free(node->t.internalnode.children[4]);
             free(node->t.internalnode.children[5]);
-            free(node->t.internalnode.children[6]);
-            free(node->t.internalnode.children[8]);
+            // free(node->t.internalnode.children[6]);
+            // free(node->t.internalnode.children[8]);
         }
         else
         {
@@ -1101,9 +1101,9 @@ void applyASTRule_Node(TreeNode *node)
             free(node->t.internalnode.children[1]);
             free(node->t.internalnode.children[2]);
             free(node->t.internalnode.children[3]);
-            free(node->t.internalnode.children[4]);
+            // free(node->t.internalnode.children[4]);
             free(node->t.internalnode.children[5]);
-            free(node->t.internalnode.children[6]);
+            // free(node->t.internalnode.children[6]);
         }
         break;
     }
@@ -1135,6 +1135,8 @@ void printAstNode(astNode *node)
         printf("%20s\t %20s\t %5s\n", nodeNameEnumToString[node->n_Name], parent, "---");
     else
     {
+        //     if (node->tokenInfo->t == END || node->tokenInfo->t == START)
+        //         printf("%s----Here End -- %d\n", TerminalEnumToString[node->tokenInfo->t], node->tokenInfo->lineno);
         if (node->tokenInfo->t != EPSILON)
             printf("%20s\t %20s\t %5d\n", node->tokenInfo->lexeme, parent, node->tokenInfo->lineno);
     }

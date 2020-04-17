@@ -28,6 +28,8 @@ typedef struct List
     int var_tag;
     Leaf *lower_index;
     Leaf *upper_index;
+    int offset;
+    int width;
     struct List *next;
 } List;
 
@@ -45,6 +47,8 @@ typedef struct block
     trie *trie; //used for 'while' loop condition variables
     int module_overloaded;
     int flag_module;
+    int lower_scope;
+    int upper_scope;
 } Block;
 
 typedef struct variable
@@ -54,6 +58,7 @@ typedef struct variable
     Leaf *lower_index;
     Leaf *upper_index;
     int offset;
+    int width;
 } Variable;
 
 typedef union SymbolTableNode {
@@ -76,6 +81,7 @@ struct Table
     Node *parent;     //Denotes the source row of parent table
     Table *container; // Denotes the parent symbol table
     int size;         //How many entries are present in the table
+    int nesting_level;
 };
 
 // typedef struct BstWhile bstWhile;

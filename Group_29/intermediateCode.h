@@ -19,4 +19,3 @@ void processIO_print_Stmt(astNode *node, FILE *fp);
 tempReg *initialize_tempreg(char *reg);
 void evaluateAssignmentStmt(astNode *node, FILE *fp);
 void processAssignmentStmt_asm(astNode *node, FILE *fp);
-void processOtherStmts(astNode *node, FILE *fp);

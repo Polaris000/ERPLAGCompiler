@@ -14,7 +14,7 @@ Node *temp;
 int flag1 = 0;
 int flag2 = 0;
 
-void traverse_AST(astNode *node)
+void traverse_AST(astNode *node, error_list *list)
 {
     if (node == NULL)
         return;
@@ -26,7 +26,7 @@ void traverse_AST(astNode *node)
         {
             return;
         }
-        traverseModule(node, temp->SymbolTableNode->block.output_list);
+        traverseModule(node, temp->SymbolTableNode->block.output_list, list);
         if (temp->SymbolTableNode->block.module_overloaded == 1)
             temp->SymbolTableNode->block.flag_module = 1;
     }
@@ -41,7 +41,7 @@ void traverse_AST(astNode *node)
 
             astNode *input_list = node->child_list->head->sibling->sibling->child_list->head; // invoking parameters
 
-            parameter_check(input_list, output_list, moduleName, node->tb);
+            parameter_check(input_list, output_list, moduleName, node->tb, list);
         }
         else // return type is void
         {
@@ -50,57 +50,69 @@ void traverse_AST(astNode *node)
 
             astNode *input_list = node->child_list->head->sibling->sibling->child_list->head; // invoking parameters
 
-            parameter_check(input_list, NULL, moduleName, node->tb);
+            parameter_check(input_list, NULL, moduleName, node->tb, list);
         }
     }
 
-    if (node->n_Name == assignmentStmt_ast)
-    {
+    // if (node->n_Name == assignmentStmt_ast)
+    // {
 
-        if (node->parent->n_Name == itr_for_ast)
-        {
-            astNode *parent = node->parent;
-            if (strcmp(parent->child_list->head->tokenInfo->lexeme, node->child_list->head->tokenInfo->lexeme) == 0)
-            {
-                printf("Line %d: 'For' loop variable %s cannot be assigned a value\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
-                return;
-            }
-        }
+    //     if (node->parent->n_Name == itr_for_ast)
+    //     {
+    //         astNode *parent = node->parent;
+    //         if (strcmp(parent->child_list->head->tokenInfo->lexeme, node->child_list->head->tokenInfo->lexeme) == 0)
+    //         {
+    //             printf("Line %d: 'For' loop variable %s cannot be assigned a value\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
+    //             return;
+    //         }
+    //     }
 
-        flag1 = 0;
-        flag2 = 0;
-        char *type;
-        // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
-        if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
-        {
-            type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling->sibling);
-        }
-        else //lvalueIDStmt_ast
-        {
-            astNode *rhs = node->child_list->head->sibling->child_list->head->sibling;
-            if (rhs->n_Name == var_id_num_ast)
-            {
-                Node *n = lookupID(node->tb, rhs->child_list->head->tokenInfo->lexeme);
-                if (n && n->SymbolTableNode->variable.var_tag == 1) //Array assignment. Do bound and type check
-                {
-                    check_array_assignment(node);
-                }
-                return;
-            }
-            type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling);
-        }
-        Node *typeLhs = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
+    //     flag1 = 0;
+    //     flag2 = 0;
+    //     char *type;
+    //     // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
+    //     if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
+    //     {
+    //         type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling->sibling);
+    //     }
+    //     else //lvalueIDStmt_ast
+    //     {
+    //         astNode *rhs = node->child_list->head->sibling->child_list->head->sibling;
+    //         if (rhs->n_Name == var_id_num_ast)
+    //         {
+    //             Node *n = lookupID(node->tb, rhs->child_list->head->tokenInfo->lexeme);
+    //             if (n && n->SymbolTableNode->variable.var_tag == 1) //Array assignment. Do bound and type check
+    //             {
+    //                 check_array_assignment(node);
+    //             }
+    //             return;
+    //         }
+    //         type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling);
+    //     }
+    //     Node *typeLhs = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
 
-        if ((type == NULL && flag1 == 0) || (type && strcmp(type, typeLhs->SymbolTableNode->variable.addr) != 0 && flag1 == 0))
-            printf("Line %d: Type Mismatch\n", node->child_list->head->tokenInfo->lineno);
-    }
+    //     if ((type == NULL && flag1 == 0) || (type && strcmp(type, typeLhs->SymbolTableNode->variable.addr) != 0 && flag1 == 0))
+    //         printf("Line %d: Type Mismatch\n", node->child_list->head->tokenInfo->lineno);
+    // }
 
     if (node->n_Name == itr_while_ast)
     {
         // trie *trie = node->tb->parent->SymbolTableNode->block.trie;
         traverseWhile(node, node->tb);
         if (node->tb->parent->SymbolTableNode->block.addr == NULL)
-            printf("Line %d: Condition variable inside While loop has not been updated\n", node->child_list->head->tokenInfo->lineno);
+        {
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Condition variable inside While loop has not been updated\n", node->child_list->head->tokenInfo->lineno);
+            appendError_at_head(list, err, node->child_list->head->tokenInfo->lineno);
+        }
+        // printf("Line %d: Condition variable inside While loop has not been updated\n", node->child_list->head->tokenInfo->lineno);
+    }
+
+    if (node->n_Name == conditionalStmt_ast)
+    {
+        Table *t1 = node->tb;
+        if (t1->parent->SymbolTableNode->block.addr == NULL)
+            return;
     }
 
     Children *chi = node->child_list;
@@ -111,14 +123,17 @@ void traverse_AST(astNode *node)
         if (node->n_Name == module_ast)
         {
             Node *check = lookUpST(node->child_list->head->tokenInfo->lexeme, baseTb);
-            List *list = check->SymbolTableNode->block.output_list; //output parameters of module from symbol table
-            while (list)
+            List *list_node = check->SymbolTableNode->block.output_list; //output parameters of module from symbol table
+            while (list_node)
             {
-                if (list->assigned == 0)
+                if (list_node->assigned == 0)
                 {
-                    printf("Line %d: Output parameter '%s' has not been assigned any value inside module '%s'\n", node->child_list->head->tokenInfo->lineno, list->val, node->child_list->head->tokenInfo->lexeme);
+                    // printf("Line %d: Output parameter '%s' has not been assigned any value inside module '%s'\n", node->child_list->head->tokenInfo->lineno, list->val, node->child_list->head->tokenInfo->lexeme);
+                    char *err = malloc(sizeof(char) * 200);
+                    sprintf(err, "Line %d: Output parameter '%s' has not been assigned any value inside module '%s'\n", node->child_list->head->tokenInfo->lineno, list_node->val, node->child_list->head->tokenInfo->lexeme);
+                    appendError_at_head(list, err, node->child_list->head->tokenInfo->lineno);
                 }
-                list = list->next;
+                list_node = list_node->next;
             }
             temp = NULL;
             // printf("Bye -- Module -- %s\n", nodeNameEnumToString[node->n_Name]);
@@ -126,13 +141,13 @@ void traverse_AST(astNode *node)
 
         while (temp)
         {
-            traverse_AST(temp);
+            traverse_AST(temp, list);
             temp = temp->sibling;
         }
     }
 }
 
-void traverseModule(astNode *node, List *output_list)
+void traverseModule(astNode *node, List *output_list, error_list *list)
 {
     if (node == NULL)
         return;
@@ -147,7 +162,7 @@ void traverseModule(astNode *node, List *output_list)
 
             astNode *input_list = node->child_list->head->sibling->sibling->child_list->head;
 
-            parameter_check(input_list, out_list, moduleName, node->tb);
+            parameter_check(input_list, out_list, moduleName, node->tb, list);
 
             //check whether the output variable has been assigned any value
             out_list = node->child_list->head->child_list->head->child_list->head;
@@ -167,63 +182,64 @@ void traverseModule(astNode *node, List *output_list)
 
             astNode *input_list = node->child_list->head->sibling->sibling->child_list->head;
 
-            parameter_check(input_list, NULL, moduleName, node->tb);
+            parameter_check(input_list, NULL, moduleName, node->tb, list);
         }
     }
+
     //assignment statement
     if (node->n_Name == assignmentStmt_ast)
     {
-        if (node->parent->n_Name == itr_for_ast)
-        {
-            astNode *parent = node->parent;
-            if (strcmp(parent->child_list->head->tokenInfo->lexeme, node->child_list->head->tokenInfo->lexeme) == 0)
-            {
-                printf("Line %d: 'For' loop variable %s cannot be assigned a value\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
-                return;
-            }
-        }
+        //     if (node->parent->n_Name == itr_for_ast)
+        //     {
+        //         astNode *parent = node->parent;
+        //         if (strcmp(parent->child_list->head->tokenInfo->lexeme, node->child_list->head->tokenInfo->lexeme) == 0)
+        //         {
+        //             printf("Line %d: 'For' loop variable %s cannot be assigned a value\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
+        //             return;
+        //         }
+        //     }
 
-        flag1 = 0;
-        flag2 = 0;
-        char *type;
-        Node *typeLhs = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
-        if (typeLhs == NULL)
-            return;
-        // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
-        if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
-        {
-            Node *n = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
-            char *check = checkArray(n, node->child_list->head->sibling->child_list->head->child_list->head->tokenInfo, node->child_list->head->tokenInfo->lineno);
+        //     flag1 = 0;
+        //     flag2 = 0;
+        //     char *type;
+        //     Node *typeLhs = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
+        //     if (typeLhs == NULL)
+        //         return;
+        //     // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
+        //     if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
+        //     {
+        //         Node *n = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
+        //         char *check = checkArray(n, node->child_list->head->sibling->child_list->head->child_list->head->tokenInfo, node->child_list->head->tokenInfo->lineno);
 
-            type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling->sibling);
-        }
-        else //lvalueIDStmt_ast
-        {
-            astNode *rhs = node->child_list->head->sibling->child_list->head->sibling;
-            if (rhs->n_Name == var_id_num_ast)
-            {
-                Node *n = lookupID(node->tb, rhs->child_list->head->tokenInfo->lexeme);
-                if (n == NULL)
-                    printf("%s----\n", rhs->child_list->head->tokenInfo->lexeme);
-                if (n && n->SymbolTableNode->variable.var_tag == 1 && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //Array assignment. Do bound and type check
-                {
-                    // printf("Here\n");
-                    check_array_assignment(node);
-                    return;
-                }
-                else if (n && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //expression of type  array_variable = integer
-                {
-                    printf("Line %d: Variables '%s' and '%s' are of different types\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme, rhs->child_list->head->tokenInfo->lexeme);
-                    return;
-                }
-            }
-            type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling);
-        }
+        //         type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling->sibling);
+        //     }
+        //     else //lvalueIDStmt_ast
+        //     {
+        //         astNode *rhs = node->child_list->head->sibling->child_list->head->sibling;
+        //         if (rhs->n_Name == var_id_num_ast)
+        //         {
+        //             Node *n = lookupID(node->tb, rhs->child_list->head->tokenInfo->lexeme);
+        //             if (n == NULL)
+        //                 printf("%s----\n", rhs->child_list->head->tokenInfo->lexeme);
+        //             if (n && n->SymbolTableNode->variable.var_tag == 1 && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //Array assignment. Do bound and type check
+        //             {
+        //                 // printf("Here\n");
+        //                 check_array_assignment(node);
+        //                 return;
+        //             }
+        //             else if (n && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //expression of type  array_variable = integer
+        //             {
+        //                 printf("Line %d: Variables '%s' and '%s' are of different types\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme, rhs->child_list->head->tokenInfo->lexeme);
+        //                 return;
+        //             }
+        //         }
+        //         type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling);
+        //     }
 
-        if ((type == NULL && flag1 == 0) || (type && strcmp(type, typeLhs->SymbolTableNode->variable.addr) != 0 && flag1 == 0))
-            printf("Line %d: Type Mismatch\n", node->child_list->head->tokenInfo->lineno);
+        //     if ((type == NULL && flag1 == 0) || (type && strcmp(type, typeLhs->SymbolTableNode->variable.addr) != 0 && flag1 == 0))
+        //         printf("Line %d: Type Mismatch\n", node->child_list->head->tokenInfo->lineno);
 
-        //check whether the output variable has been assigned any value
+        //     //check whether the output variable has been assigned any value
         List *out_node = retrieveOutList(output_list, node->child_list->head->tokenInfo->lexeme);
         if (out_node)
         {
@@ -245,15 +261,20 @@ void traverseModule(astNode *node, List *output_list)
         traverseWhile(node, node->tb);
         // printf("Here\n");
         if (node->tb->parent->SymbolTableNode->block.addr == NULL)
-            printf("Line %d: Condition variable inside While loop has not been updated\n", node->child_list->head->tokenInfo->lineno);
+        {
+            char *err = malloc(sizeof(char) * 200);
+            sprintf(err, "Line %d: Condition variable inside While loop has not been updated\n", node->child_list->head->tokenInfo->lineno);
+            appendError_at_head(list, err, node->child_list->head->tokenInfo->lineno);
+        }
+        // printf("Line %d: Condition variable inside While loop has not been updated\n", node->child_list->head->tokenInfo->lineno);
     }
 
-    // if(node->n_Name == itr_for_ast)
-    // {
-    //     astNode* temp = node->child_list->head;
-
-    // }
-
+    if (node->n_Name == conditionalStmt_ast)
+    {
+        Table *t1 = node->tb;
+        if (t1->parent->SymbolTableNode->block.addr == NULL)
+            return;
+    }
     Children *chi = node->child_list;
     astNode *temp;
     if (chi)
@@ -261,13 +282,13 @@ void traverseModule(astNode *node, List *output_list)
         temp = chi->head;
         while (temp)
         {
-            traverseModule(temp, output_list);
+            traverseModule(temp, output_list, list);
             temp = temp->sibling;
         }
     }
 }
 
-void check_array_assignment(astNode *node)
+void check_array_assignment(astNode *node, error_list *list)
 {
     // printf("Array Bound Check\n");
     astNode *lhs = node->child_list->head;
@@ -287,11 +308,17 @@ void check_array_assignment(astNode *node)
         {
             if (n1_lower->val->intValue != n2_lower->val->intValue)
             {
-                printf("Line %d: Mismatch in lower bound of '%s' and '%s' \n", lhs->tokenInfo->lineno, lhs->tokenInfo->lexeme, rhs->tokenInfo->lexeme);
+                // printf("Line %d: Mismatch in lower bound of '%s' and '%s' \n", lhs->tokenInfo->lineno, lhs->tokenInfo->lexeme, rhs->tokenInfo->lexeme);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Mismatch in lower bound of '%s' and '%s' \n", lhs->tokenInfo->lineno, lhs->tokenInfo->lexeme, rhs->tokenInfo->lexeme);
+                appendError_at_head(list, err, lhs->tokenInfo->lineno);
             }
             if (n1_upper->val->intValue != n2_upper->val->intValue)
             {
-                printf("Line %d: Mismatch in upper bound of '%s' and '%s' \n", lhs->tokenInfo->lineno, lhs->tokenInfo->lexeme, rhs->tokenInfo->lexeme);
+                // printf("Line %d: Mismatch in upper bound of '%s' and '%s' \n", lhs->tokenInfo->lineno, lhs->tokenInfo->lexeme, rhs->tokenInfo->lexeme);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Mismatch in upper bound of '%s' and '%s' \n", lhs->tokenInfo->lineno, lhs->tokenInfo->lexeme, rhs->tokenInfo->lexeme);
+                appendError_at_head(list, err, lhs->tokenInfo->lineno);
             }
         }
     }
@@ -310,7 +337,7 @@ List *retrieveOutList(List *list, char *val)
     return temp;
 }
 
-void parameter_check(astNode *input_list, astNode *output_list, astNode *moduleName, Table *tb)
+void parameter_check(astNode *input_list, astNode *output_list, astNode *moduleName, Table *tb, error_list *list)
 {
 
     Node *temp = lookUpST(moduleName->tokenInfo->lexeme, baseTb);
@@ -334,11 +361,11 @@ void parameter_check(astNode *input_list, astNode *output_list, astNode *moduleN
         if (n)
         {
             // checking the type of the variables
-            if (strcmp(n->SymbolTableNode->variable.addr, in_list->addr) != 0)
-            {
-                printf("Line %d: Input parameter type of '%s' does not match with formal parameter type which is '%s' \n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme, in_list->addr);
-            }
-            else if (n->SymbolTableNode->variable.var_tag == 1) //input variable is an array
+            // if (strcmp(n->SymbolTableNode->variable.addr, in_list->addr) != 0)
+            // {
+            //     printf("Line %d: Input parameter type of '%s' does not match with formal parameter type which is '%s' \n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme, in_list->addr);
+            // }
+            if (n->SymbolTableNode->variable.var_tag == 1) //input variable is an array
             {
                 if (in_list->var_tag == 1)
                 {
@@ -347,12 +374,25 @@ void parameter_check(astNode *input_list, astNode *output_list, astNode *moduleN
                     Leaf *n1_upper = n->SymbolTableNode->variable.upper_index;
                     Leaf *n2_lower = in_list->lower_index;
                     Leaf *n2_upper = in_list->upper_index;
+                    // printf("%s--%s\n", n2_lower->lexeme, n2_upper->lexeme);
                     if (n1_lower->t == NUM && n1_upper->t == NUM && n2_lower->t == NUM && n2_upper->t == NUM)
                     {
                         if ((n1_lower->val->intValue != n2_lower->val->intValue) || (n1_upper->val->intValue != n2_upper->val->intValue))
-                            printf("Line %d: Input parameter type of '%s' does not match with formal parameter type \n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+                        {
+                            char *err = malloc(sizeof(char) * 200);
+                            sprintf(err, "Line %d: Input parameter type of '%s' does not match with formal parameter type \n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
+                            appendError_at_head(list, err, ast->tokenInfo->lineno);
+                        }
+                        // printf("Line %d: Input parameter type of '%s' does not match with formal parameter type \n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme);
                     }
                 }
+            }
+            else if (strcmp(n->SymbolTableNode->variable.addr, in_list->addr) != 0)
+            {
+                // printf("Line %d: Input parameter type of '%s' does not match with formal parameter type which is '%s' \n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme, in_list->addr);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Input parameter type of '%s' does not match with formal parameter type which is '%s' \n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme, in_list->addr);
+                appendError_at_head(list, err, ast->tokenInfo->lineno);
             }
         }
         in_list = in_list->next;
@@ -362,7 +402,10 @@ void parameter_check(astNode *input_list, astNode *output_list, astNode *moduleN
     // different no of parameters are there
     if (ast || in_list)
     {
-        printf("Line %d: Number of input parameters does not match with that of formal parameters for module '%s'\n", moduleName->tokenInfo->lineno, moduleName->tokenInfo->lexeme);
+        // printf("Line %d: Number of input parameters does not match with that of formal parameters for module '%s'\n", moduleName->tokenInfo->lineno, moduleName->tokenInfo->lexeme);
+        char *err = malloc(sizeof(char) * 200);
+        sprintf(err, "Line %d: Number of input parameters does not match with that of formal parameters for module '%s'\n", moduleName->tokenInfo->lineno, moduleName->tokenInfo->lexeme);
+        appendError_at_head(list, err, moduleName->tokenInfo->lineno);
     }
 
     int flag = 0;
@@ -370,7 +413,10 @@ void parameter_check(astNode *input_list, astNode *output_list, astNode *moduleN
 
     if (output_list != NULL && out_list == NULL)
     {
-        printf("Line %d: Module %s shouldn't return anything\n", moduleName->tokenInfo->lineno, moduleName->tokenInfo->lexeme);
+        // printf("Line %d: Module %s shouldn't return anything\n", moduleName->tokenInfo->lineno, moduleName->tokenInfo->lexeme);
+        char *err = malloc(sizeof(char) * 200);
+        sprintf(err, "Line %d: Module %s shouldn't return anything\n", moduleName->tokenInfo->lineno, moduleName->tokenInfo->lexeme);
+        appendError_at_head(list, err, moduleName->tokenInfo->lineno);
         flag = 1;
     }
 
@@ -390,7 +436,10 @@ void parameter_check(astNode *input_list, astNode *output_list, astNode *moduleN
             if (strcmp(n->SymbolTableNode->variable.addr, out_list->addr) != 0)
             {
                 // printf("Line %d: Variable '%s' should be of '%s' type\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme, out_list->addr);
-                printf("Line %d: Output parameter type of '%s' does not match with formal parameter type which is '%s'\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme, out_list->addr);
+                // printf("Line %d: Output parameter type of '%s' does not match with formal parameter type which is '%s'\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme, out_list->addr);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Output parameter type of '%s' does not match with formal parameter type which is '%s'\n", ast->tokenInfo->lineno, ast->tokenInfo->lexeme, out_list->addr);
+                appendError_at_head(list, err, ast->tokenInfo->lineno);
             }
         }
         out_list = out_list->next;
@@ -398,11 +447,14 @@ void parameter_check(astNode *input_list, astNode *output_list, astNode *moduleN
     }
     if ((ast || out_list) && flag == 0)
     {
-        printf("Line %d: Number of output parameters does not match with that of formal parameters for module '%s'\n", moduleName->tokenInfo->lineno, moduleName->tokenInfo->lexeme);
+        // printf("Line %d: Number of output parameters does not match with that of formal parameters for module '%s'\n", moduleName->tokenInfo->lineno, moduleName->tokenInfo->lexeme);
+        char *err = malloc(sizeof(char) * 200);
+        sprintf(err, "Line %d: Number of output parameters does not match with that of formal parameters for module '%s'\n", moduleName->tokenInfo->lineno, moduleName->tokenInfo->lexeme);
+        appendError_at_head(list, err, moduleName->tokenInfo->lineno);
     }
 }
 
-char *processAssignmentStmt(astNode *node)
+char *processAssignmentStmt(astNode *node, Table *tb, error_list *list)
 {
     //if children is null, we have reached a terminal (operand). Return the type of the operand.
     if (node->child_list == NULL)
@@ -431,7 +483,7 @@ char *processAssignmentStmt(astNode *node)
         // printf("var_id_num\n");
         if (node->child_list->head->sibling) //array variable
         {
-            Node *n = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
+            Node *n = lookupID(tb, node->child_list->head->tokenInfo->lexeme);
             // printf("%s-- %d -- %s\n", n->val, n->tag, n->SymbolTableNode->variable.addr);
             // printf("Hello1\n");
             if (n == NULL)
@@ -442,17 +494,20 @@ char *processAssignmentStmt(astNode *node)
 
             // n->SymbolTableNode->variable.var_tag = 1;
             // printf("Hello2\n");
-            return checkArray(n, node->child_list->head->sibling->child_list->head->tokenInfo, node->child_list->head->tokenInfo->lineno);
+            return checkArray(n, node->child_list->head->sibling->child_list->head->tokenInfo, node->child_list->head->tokenInfo->lineno, list);
         }
         else
         {
-
-            Node *n = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
+            // printf("Hello2\n");
+            Node *n = lookupID(tb, node->child_list->head->tokenInfo->lexeme);
             if (n)
             {
                 if (n->SymbolTableNode->variable.var_tag == 1)
                 {
-                    printf("Line %d: Array variable %s should not be a part of any expression\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
+                    // printf("Line %d: Array variable %s should not be a part of any expression\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
+                    char *err = malloc(sizeof(char) * 200);
+                    sprintf(err, "Line %d: Array variable %s should not be a part of any expression\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
+                    appendError_at_head(list, err, node->child_list->head->tokenInfo->lineno);
                     flag1 = 1;
                     return NULL;
                 }
@@ -476,7 +531,7 @@ char *processAssignmentStmt(astNode *node)
     Children *chi = node->child_list;
     astNode *temp = chi->head;
 
-    type1 = processAssignmentStmt(temp);
+    type1 = processAssignmentStmt(temp, tb, list);
     // if (type1 == NULL && flag1 == 0)
     // {
     //     flag1 = 1;
@@ -484,7 +539,7 @@ char *processAssignmentStmt(astNode *node)
     temp = temp->sibling;
     if (temp)
     {
-        type2 = processAssignmentStmt(temp);
+        type2 = processAssignmentStmt(temp, tb, list);
         // if (type2 == NULL && flag1 == 0)
         // {
         //     flag1 = 1;
@@ -637,7 +692,7 @@ Node *lookupID(Table *tb, char *val)
     return NULL;
 }
 
-char *checkArray(Node *node, Leaf *index, int lineNo)
+char *checkArray(Node *node, Leaf *index, int lineNo, error_list *list)
 {
     // printf("Hello--0\n");
     Leaf *lower_index = node->SymbolTableNode->variable.lower_index;
@@ -651,7 +706,10 @@ char *checkArray(Node *node, Leaf *index, int lineNo)
         {
             if (index->val->intValue < lower_index->val->intValue || index->val->intValue > upper_index->val->intValue) // Bound checking
             {
-                printf("Line %d: Element of array '%s' is out of bound\n", lineNo, node->val);
+                // printf("Line %d: Element of array '%s' is out of bound\n", lineNo, node->val);
+                char *err = malloc(sizeof(char) * 200);
+                sprintf(err, "Line %d: Element of array '%s' is out of bound\n", lineNo, node->val);
+                appendError_at_head(list, err, lineNo);
                 flag1 = 1;
                 return NULL;
             }
@@ -715,5 +773,80 @@ void traverseWhile(astNode *node, Table *tb)
             traverseWhile(temp, tb);
             temp = temp->sibling;
         }
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+//Initialize the error semantic errors list
+error_list *init_errors()
+{
+    error_list *temp = malloc(sizeof(error_list));
+    temp->err_total = 0;
+    temp->head = NULL;
+
+    return temp;
+}
+
+void appendError_at_head(error_list *list, char *err, int line_no)
+{
+    error *temp = malloc(sizeof(error));
+    temp->line_no = line_no;
+    temp->err = err;
+
+    temp->next = list->head;
+    list->head = temp;
+
+    list->err_total++;
+}
+
+void sortErrorList(error_list *list)
+{
+    if (list->head == NULL)
+        return;
+
+    sortErrorsListRecur(list->head, list->err_total);
+}
+
+void sortErrorsListRecur(error *temp, int total)
+{
+    if (temp->next == NULL)
+        return;
+    sortErrorsListRecur(temp->next, total--);
+
+    int line_no = temp->line_no;
+    char *str = temp->err;
+
+    error *pretemp = temp;
+    temp = temp->next;
+    while (temp != NULL)
+    {
+
+        if (temp->line_no > line_no)
+        {
+            break;
+        }
+
+        pretemp->line_no = temp->line_no;
+        pretemp->err = temp->err;
+
+        temp = temp->next;
+        pretemp = pretemp->next;
+    }
+
+    pretemp->line_no = line_no;
+    pretemp->err = str;
+}
+
+void printSemanticErrors(error_list *list)
+{
+    sortErrorList(list);
+    printf("\n\n----------------------------------Printing Semantic Errors-------------------------------\n\n");
+
+    error *head = list->head;
+    while (head)
+    {
+        printf("%s", head->err);
+        head = head->next;
     }
 }

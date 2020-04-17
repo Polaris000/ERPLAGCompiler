@@ -716,7 +716,7 @@ ParseTree *initialize_tree()
     return pt;
 }
 
-ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *gm, FirstAndFollow *F)
+ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *gm, FirstAndFollow *F, int *syn_error)
 {
     //Initialize the lexer by giving the file input
     FILE *fp = initializeLexer(testCaseFile);
@@ -760,6 +760,7 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
         if (tk->name == ERROR)
         {
             printf("Line %d: Lexical Error encountered, unexpected token %s\n", tk->lineNo, tk->lexeme);
+            (*syn_error)++;
             tk = getNextToken(fp);
             flag3 = 1;
             continue;
@@ -775,7 +776,10 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
                 count++;
                 // Generate syntax error
                 if (!flag2 && !flag3)
+                {
                     printf("Line %d: Syntax Error in the input\n", tk->lineNo);
+                    (*syn_error)++;
+                }
 
                 flag2 = 0;
                 flag3 = 0;
@@ -886,6 +890,7 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
             else if (snode->tag == 2 && tk != NULL)
             {
                 printf("Syntax Error, stack became empty \n");
+                (*syn_error)++;
                 endOfFile = 0;
                 currLine = 1;
                 return pt;
@@ -896,12 +901,13 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
                 if (snode->t.leafnode.t == SEMICOL)
                 {
                     printf("Line %d: Error in the input as expected %s before this line\n", tk->lineNo, TerminalEnumToString[snode->t.leafnode.t]);
+                    (*syn_error)++;
                     pop(st);
                     flag2 = 1;
                     continue;
                 }
                 printf("Line %d: Error in the input as expected token is %s\n", tk->lineNo, TerminalEnumToString[snode->t.leafnode.t]);
-
+                (*syn_error)++;
                 //Error Recovery using first set method of panic mode
                 pop(st);
                 flag2 = 1;
@@ -926,11 +932,10 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
 
         if (top(st)->tag == 2)
         {
-            printf("*************************  Parsing Completed Successfully ******************************\n");
-            printf("----------------------- Parse Tree is printed in the specified file ----------------------\n\n");
+            printf("\n\n--------------------------  Parsing Completed Successfully -----------------------------\n");
         }
         if (count == 0)
-            printf("*****************  Input Source Code is Syntatically Correct **********************\n\n\n\n");
+            printf("\n\n-------------------------- Input Source Code is Syntatically Correct-------------------------\n\n");
     }
 
     endOfFile = 0;
