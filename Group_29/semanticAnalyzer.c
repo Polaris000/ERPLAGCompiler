@@ -70,7 +70,7 @@ void traverse_AST(astNode *node)
         flag1 = 0;
         flag2 = 0;
         char *type;
-        printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
+        // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
         if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
         {
             type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling->sibling);

@@ -639,7 +639,7 @@ Table *processNode(Table *tb, astNode *node)
     }
     else if (node->n_Name == conditionalStmt_ast)
     {
-        printf("Hello----------9\n");
+        // printf("Hello----------9\n");
 
         Table *t1 = insertST(stringconcat(itoa(tb->parent->SymbolTableNode->block.num_switch), "switch"), tb, 1);
 
@@ -694,7 +694,7 @@ Table *processNode(Table *tb, astNode *node)
 
     else if (node->n_Name == caseStmts_ast)
     {
-        printf("Hello----------10\n");
+        // printf("Hello----------10\n");
 
         Children *chi = node->child_list;
         astNode *temp = chi->head;
@@ -721,7 +721,7 @@ Table *processNode(Table *tb, astNode *node)
         node->tb = tb;
     else
     {
-        printf("Hello from else\n");
+        // printf("Hello from else\n");
         // if ((int)node->n_Name > -1 && node->parent && (int)node->parent->n_Name > -1)
         //     printf("%s \t %s\n", nodeNameEnumToString[node->n_Name], nodeNameEnumToString[node->parent->n_Name]);
 
@@ -745,7 +745,7 @@ void processModule(Table *tb, astNode *node)
     }
     else
     {
-        printf("Hello from modules populate\n");
+        // printf("Hello from modules populate\n");
     }
 
     Children *chi = node->child_list;
@@ -769,7 +769,7 @@ void processModule(Table *tb, astNode *node)
         if ((node->n_Name == conditionalStmt_ast && lookUpST(stringconcat(itoa(tb->parent->SymbolTableNode->block.num_switch - 1), "switch"), tb) != NULL))
         {
             temp = NULL;
-            printf("I'm There switch\n");
+            // printf("I'm There switch\n");
         }
         if ((node->n_Name == itr_for_ast && lookUpST(stringconcat(itoa(tb->parent->SymbolTableNode->block.num_for - 1), "for"), tb) != NULL))
         {

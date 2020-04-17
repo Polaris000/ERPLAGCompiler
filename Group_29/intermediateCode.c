@@ -30,8 +30,8 @@ void startCode(FILE *fp)
 
 void endCode(FILE *fp)
 {
-    fprintf(fp, " %s%s%s"
-                "\tmov \t ebx, 0\n",
+    fprintf(fp, " %s%s%s",
+            "\tmov \t ebx, 0\n",
             "\tmov \t eax, 1\n",
             "\tint \t 80h \n");
 }
@@ -109,10 +109,10 @@ void traverseDriverModule(astNode *node, FILE *fp)
     //     processForLoop(node, fp);
     // }
 
-    // else if (node->n_Name == itr_while_ast)
-    // {
-    //     processWhileLoop(node, fp);
-    // }
+    else if (node->n_Name == itr_while_ast)
+    {
+        processWhileLoop(node, fp);
+    }
 
     // else if (node->n_Name == conditionalStmt_ast)
     // {
@@ -174,30 +174,43 @@ void processIO_getValue_Stmt(astNode *node, FILE *fp)
 
 void processIO_print_Stmt(astNode *node, FILE *fp) // check whether whole array can also be printed
 {
-    fprintf(fp, "\tmov \t eax, inputMsg\n%s",
-            "\t call \t sprint\n");
+    fprintf(fp, "\tpush \tinputMsg\n");
+    fprintf(fp, "\tpush \tstrformat\n");
+    fprintf(fp, "\t call \t printf\n");
+
     if (node->child_list->head->n_Name == var_id_num_ast)
     {
         Node *n = lookUpST(node->child_list->head->tokenInfo->lexeme, node->tb);
         if (n->SymbolTableNode->variable.var_tag == 1) //array variable
         {
+            
         }
+
         else
         {
             int offset = n->SymbolTableNode->variable.offset;
-            fprintf(fp, "\tmov \t eax, [ebp+%d]\n", offset);
-            fprintf(fp, "\tcall iprintLF\n");
+            // add check for format specifier using offset
+            // maybe we could generalize this?
+
+            fprintf(fp, "\tpush, [ebp+%d]\n", offset);
+            fprintf(fp, "\tcall printf\n");
         }
     }
+
     else if (node->child_list->head->tokenInfo->t == TRUE)
     {
+        
     }
+
     else if (node->child_list->head->tokenInfo->t == FALSE)
     {
     }
+
     else if (node->child_list->head->tokenInfo->t == NUM)
     {
+
     }
+
     else if (node->child_list->head->tokenInfo->t == RNUM)
     {
     }
@@ -281,26 +294,53 @@ tempReg *initialize_tempreg(char *reg)
     return temp;
 }
 
-// void processWhileLoop(astNode *node, FILE *fp)
-// {
-//     int start = get_next_label();
-//     fprintf(fp, "LABEL%d:\n", start);
+int get_next_label()
+{
 
-//     int end = get_next_label();
-//     fprintf(fp, "\tcmp \t eax,0\n");
-//     fprintf(fp, "\tjz \t LABEL%d\n", end);
+}
 
-//     processOtherStmts(node->child_list->head->sibling);
+void processWhileLoop(astNode *node, FILE *fp)
+{
+    // int start = get_next_label();
+    printf("Inside while process...\n");
+    int start = 1;
+    fprintf(fp, "while%d:\n", start);
 
-//     fprintf(fp, "\tjmp \t LABEL%d\n", start);
-//     fprintf(fp, "LABEL%d:\n", end);
-// }
+    // int end = get_next_label();
+    int end = 2;
+    fprintf(fp, "\tcmp \t eax,0\n");
+    fprintf(fp, "\tjz \t while_end%d\n", end);
 
-// void processOtherStmts(astNode *node)
-// {
-//     while (node)
-//     {
-//         traverseDriverModule(node,fp);
-//         node = node->sibling;
-//     }
-// }
+    processOtherStmts(node->child_list->head->sibling, fp);
+
+    fprintf(fp, "\tjmp \t while%d\n", start);
+    fprintf(fp, "while_end%d:\n", end);
+
+
+    /*
+        a := 0; ebp + 4
+        b := 3; ebp + 8
+
+        while (a < b)
+        start
+            a := a + 1;
+        end
+
+        // --------------------
+        mov 
+        label1:
+            add eax, 1
+            cmp eax, ebx
+            jne label1
+
+    */
+}
+
+void processOtherStmts(astNode *node, FILE *fp)
+{
+    while (node)
+    {
+        traverseDriverModule(node,fp);
+        node = node->sibling;
+    }
+}

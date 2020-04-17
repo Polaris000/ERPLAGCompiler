@@ -1,0 +1,11 @@
+<<<driver program>>>
+start
+    declare a, b: integer;
+    a := 0;
+    b := 3;
+
+    while (a < b)
+    start
+        a := a + 1;
+    end
+end
