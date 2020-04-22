@@ -6,7 +6,7 @@ returns  [sum:real];
 start
 	declare index:integer;
 	declare t:boolean;
-	sum:=0.0;
+	**sum:=0.0;**
 	for(index in  1..15)
 	start
 		t:= index<=n;
@@ -15,14 +15,18 @@ start
 			case true: print(list[index]);
 				   sum:=sum+list[index];
 				   break;
+			case 4: break;
 			case false: print(sum);
 				    print(index);
 				    **prints the values of sum and index  15-n times**
 				    break;
+			default: print(sum);
+					break;
 		end
 		** no need to increment the value of index as it will be taken care by the semantic rules associated with for construct, but an increment statement does not make its syntax incorrect**
 	end
-	print(sum);
+	**print(sum);**
+	get_value(sum);
 end
 <<<driver program>>>
 start
@@ -50,7 +54,6 @@ start
 	start
 		get_value(tempvar);
 		arr1[i]:=tempvar;
-		i:=i+1;
-		** the semantics of while needs an increment and will be taken care of at the second phase**
+		tempvar:=i+1;
 	end
 end

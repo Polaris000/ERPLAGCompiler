@@ -1,0 +1,25 @@
+<<module array_parameter_demo>>
+takes input[ B: array[10..14] of integer, C:array[low..high] of integer];
+returns [sum1:integer, sum2: integer, sum3:integer];
+start
+    print(B);
+    sum1 := 1;
+    sum2 := 2;
+    sum3 := 3;
+end
+
+<<<driver program>>>
+start
+    declare m,n: integer;
+    m := 3;
+    n := 5;
+    declare array_A: array[10..14] of integer;
+	declare array_B: array[m..n] of integer;
+	get_value(array_A);
+	get_value(array_B);
+    declare s1, s2, s3:integer;
+    [s1, s2, s3]:= use module array_parameter_demo with parameters array_A, array_B;
+    print(s1);
+    print(s2);
+    print(s3);
+end

@@ -1,4 +1,5 @@
 ** This testcase demonstrates correctness of module structure with declaration and simple statements**
+
 <<<driver program>>>
 start
 	declare v_1_2_3:integer;

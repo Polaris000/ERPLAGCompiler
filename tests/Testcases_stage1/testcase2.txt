@@ -1,4 +1,3 @@
-** This should not be printed in new file **
 declare module compute;
 <<<driver program>>>
 start
