@@ -8,7 +8,7 @@
 
 #include "ast.h"
 #include "symbolTable.h"
-#include "intermediateCodeDef.h"
+#include "codegenDef.h"
 
 void startCode(FILE *fp);
 void generate_assembly_code(astNode *root, char *asm_file);

@@ -85,7 +85,7 @@ typedef union {
 
 typedef struct
 {
-	Terminal name;   // for representing the token-name as given in the specifications
+	Terminal name;	 // for representing the token-name as given in the specifications
 	char lexeme[50]; //character sequence of` the tokens in the program
 	int lineNo;		 //line number of the token which is used for error reporting
 	value *val;		 // to store the value of integers and floats

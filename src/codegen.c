@@ -6,7 +6,7 @@
 		2017A7PS0193P -- AYUSH GARG
 */
 
-#include "intermediateCode.h"
+#include "codegen.h"
 #include "symbolTable.h"
 extern Table *baseTb;
 // Table *parentTableGlobal;

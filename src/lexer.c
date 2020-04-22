@@ -38,7 +38,7 @@ FILE *getStream(FILE *fp)
 	}
 	else
 	{
-		printf("End of File Reached, Closing the file\n\n\n");
+		// printf("End of File Reached, Closing the file\n\n\n");
 		fclose(fp); // close the file if no more character left and return NULL
 		endOfFile = 1;
 		return NULL;
@@ -1030,7 +1030,7 @@ FILE *initializeLexer(char *testCaseFile) // Used in the ParseInputSourceCode Fu
 	}
 	else
 	{
-		printf("File opened with success\n\n\n");
+		// printf("File opened with success\n\n\n");
 	}
 
 	firstBuffer = (char *)malloc(sizeof(char) * bufferSize);

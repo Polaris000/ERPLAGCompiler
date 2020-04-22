@@ -11,22 +11,14 @@
 #include "ast.h"
 #include "semanticAnalyzer.h"
 #include "symbolTable.h"
-#include "intermediateCode.h"
+#include "codegen.h"
 
 #include <time.h>
 extern Table *baseTb;
 
 int main(int argc, char *argv[])
 {
-    printf(
-        "\t\t\t\t\tNOTICE\n"
-        "\t\t\t\t\t=======\n\n"
-        "* FIRST and FOLLOW set automated.\n"
-        "* Both lexical and syntax analysis modules have been implemented.\n"
-        "* Parse Tree constructed for syntatically correct code.\n"
-        "* Parse tree printing is implemented using both Inorder and Level Order Traversal.\n"
-        "* Modules work with all the provided testcases including the syntatically incorrect one.\n");
-
+    printf("\n\nLEVEL 4: Symbol table / Type Checking / Semantic rules modules works / handled static and dynamic arrays in type checking and code generation\n");
     printf("------------------------------------------------------------------------------------------\n\n");
 
     if (argc < 3)
@@ -34,14 +26,14 @@ int main(int argc, char *argv[])
         printf(
             "USAGE\n"
             "=====\n\n"
-            "The command line argument for execution of the driver should be as follows:\n\n"
-            "\t\t$./stage1exe   testcase.txt   parsetreeOutFile.txt\n\n");
+            "The command line arguments for execution of the driver should be as follows:\n\n"
+            "\t\t$./compiler   testcase.txt   code.asm\n\n");
         exit(0);
     }
 
     Grammar *gm = initialize();
     gm = make_table("grammar.txt", gm);
-    printf("----------Grammar Loaded into the appropriate data structure-----------------\n\n");
+    printf("-------Grammar Loaded into the appropriate data structure------------\n\n");
 
     FirstAndFollow *firstFol = initializeFirstFollow();
     ComputeFirstAndFollowSets(gm, firstFol);
@@ -112,20 +104,24 @@ int main(int argc, char *argv[])
 
         case 3:
 
-            num_syn_err = 0;
-            num_sem_err = 0;
-            pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
-
-            if (num_syn_err)
-                printf("\n\nAST can't be constructed since the code has Syntax Errors\n\n");
+            // num_syn_err = 0;
+            // num_sem_err = 0;
+            // pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
+            if (code_parsed == 0)
+                printf("\n-----------Parse Tree not yet created. Select option 2 first ----------------\n");
             else
             {
-                ast = postOrder_ParseTree(pTree);
-                printf("\n\n-----------------------------------Printing AST (Preorder Traversal)----------------------------------\n\n");
-                printAst(ast);
-                printf("\n\n----------------------------AST Printed in Preorder Fashion (Node first, and then children)----------------------------\n\n");
+                if (num_syn_err)
+                    printf("\n\nAST can't be constructed since the code has Syntax Errors\n\n");
+                else
+                {
+                    ast = postOrder_ParseTree(pTree);
+                    printf("\n\n-----------------------------------Printing AST (Preorder Traversal)----------------------------------\n\n");
+                    printAst(ast);
+                    printf("\n\n----------------------------AST Printed in Preorder Fashion (Node first, and then children)----------------------------\n\n");
 
-                astCreated = 1;
+                    astCreated = 1;
+                }
             }
             break;
 
@@ -145,25 +141,15 @@ int main(int argc, char *argv[])
         case 5:
             if (baseTb == NULL)
             {
-                // num_syn_err = 0;
-                // num_sem_err = 0;
+
                 if (pTree == NULL)
-                {
-                    num_syn_err = 0;
                     pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
-                }
-
-                if (num_syn_err)
-                    printf("\n\nAST can't be constructed since the code has Syntax Errors\n\n");
-                else
-                {
+                if (ast == NULL)
                     ast = postOrder_ParseTree(pTree);
-                    error_list *errors = init_errors();
-                    Table *tb = populateSymbolTable(ast, errors);
-                    printSymbolTable(tb);
-                }
+                error_list *errors = init_errors();
+                Table *tb = populateSymbolTable(ast, errors);
+                printSymbolTable(tb);
             }
-
             else
             {
                 printSymbolTable(baseTb);
@@ -175,11 +161,8 @@ int main(int argc, char *argv[])
         {
             if (baseTb == NULL)
             {
-                pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
-                ast = postOrder_ParseTree(pTree);
-                error_list *errors = init_errors();
-                Table *tb = populateSymbolTable(ast, errors);
-                calcMemoryofFunctions(tb);
+
+                printf("\n------------SymbolTable not yet built. Select option 5 first --------------\n");
             }
 
             else
@@ -192,11 +175,14 @@ int main(int argc, char *argv[])
         case 7:
             if (baseTb == NULL)
             {
-                pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
-                ast = postOrder_ParseTree(pTree);
+                if (pTree == NULL)
+                    pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
+                if (ast == NULL)
+                    ast = postOrder_ParseTree(pTree);
                 error_list *errors = init_errors();
                 Table *tb = populateSymbolTable(ast, errors);
                 printArrays(tb);
+                printf("\n------------SymbolTable not yet built. Select Option 5 first --------------\n");
             }
             else
             {
@@ -217,7 +203,8 @@ int main(int argc, char *argv[])
 
             start_time = clock();
 
-            pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
+            if (pTree == NULL)
+                pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
             if (pTree)
             {
                 if (num_syn_err)
@@ -225,7 +212,8 @@ int main(int argc, char *argv[])
                 else
                 {
                     printf("\n\n---------------------------Semantic Analysis Begins---------------------------\n\n");
-                    ast = postOrder_ParseTree(pTree);
+                    if (ast == NULL)
+                        ast = postOrder_ParseTree(pTree);
                     error_list *errors = init_errors();
                     Table *tb = populateSymbolTable(ast, errors);
                     traverse_AST(ast, errors);
@@ -233,8 +221,8 @@ int main(int argc, char *argv[])
                     if (errors->head != NULL)
                     {
                         num_sem_err = errors->err_total;
+                        printf("\n\n------------------------Semantic Errors Reported -------------------------\n");
                         printSemanticErrors(errors);
-                        printf("\n\n------------------------Semantic Errors Reported -------------------------\n\n");
                     }
 
                     else
@@ -263,7 +251,8 @@ int main(int argc, char *argv[])
             num_syn_err = 0;
             num_sem_err = 0;
 
-            pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
+            if (pTree == NULL)
+                pTree = parseInputSourceCode(argv[1], pt, gm, firstFol, &num_syn_err);
             if (pTree)
             {
                 if (num_syn_err)
@@ -271,7 +260,8 @@ int main(int argc, char *argv[])
                 else
                 {
                     printf("\n\n---------------------------Semantic Analysis Begins---------------------------\n\n");
-                    ast = postOrder_ParseTree(pTree);
+                    if (ast == NULL)
+                        ast = postOrder_ParseTree(pTree);
                     error_list *errors = init_errors();
                     Table *tb = populateSymbolTable(ast, errors);
                     traverse_AST(ast, errors);

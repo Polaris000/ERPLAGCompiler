@@ -6,8 +6,8 @@
         2017A7PS0193P -- AYUSH GARG
 */
 
-#ifndef _intermediateCodeDef_
-#define _intermediateCodeDef_
+#ifndef _CodeDef_
+#define _CodeDef_
 
 // typedef struct tempreg tempReg;
 // typedef struct tempreg

@@ -88,6 +88,7 @@ void traverse_AST(astNode *node, error_list *list)
                 if (list_node->assigned == 0)
                 {
                     // printf("Line %d: Output parameter '%s' has not been assigned any value inside module '%s'\n", node->child_list->head->tokenInfo->lineno, list->val, node->child_list->head->tokenInfo->lexeme);
+                    // astNode* end = node->child_list->head->sibling->sibling->sibling->child_list->head;
                     char *err = malloc(sizeof(char) * 200);
                     sprintf(err, "Line %d: Output parameter '%s' has not been assigned any value inside module '%s'\n", node->child_list->head->tokenInfo->lineno, list_node->val, node->child_list->head->tokenInfo->lexeme);
                     appendError_at_head(list, err, node->child_list->head->tokenInfo->lineno);

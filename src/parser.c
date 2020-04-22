@@ -922,25 +922,14 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
     }
     else
     {
-        printf("What\n");
         snode = pop(st);
-        printf("happened\n");
-        if (snode)
-            printf("Hi\n");
-        printf("%s\n", nonTerminalEnumToString[snode->t.internalnode.nodesym]);
         snode->rule_no = 1;
         snode->addr = NULL;
         snode->inh = NULL;
-        printf("What\n");
         TreeNode *tmpnode = initialize_leafnode(1, EPSILON, snode->t.internalnode.nodesym);
-        printf("%s---%d\n", tmpnode->t.leafnode.lexeme, snode->t.internalnode.rhs_size);
-        //error
         snode->t.internalnode.children = realloc(snode->t.internalnode.children, sizeof(TreeNode *) * (snode->t.internalnode.rhs_size + 1));
-        printf("Heloo--\n");
         snode->t.internalnode.children[snode->t.internalnode.rhs_size] = tmpnode;
-        printf("Hi----\n");
         snode->t.internalnode.rhs_size += 1;
-        printf("h--\n");
         // if (top(st)->tag == 2)
         // {
         //     printf("\n\n--------------------------  Parsing Completed Successfully -----------------------------\n");
