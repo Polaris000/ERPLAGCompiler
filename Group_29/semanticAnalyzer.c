@@ -54,47 +54,6 @@ void traverse_AST(astNode *node, error_list *list)
         }
     }
 
-    // if (node->n_Name == assignmentStmt_ast)
-    // {
-
-    //     if (node->parent->n_Name == itr_for_ast)
-    //     {
-    //         astNode *parent = node->parent;
-    //         if (strcmp(parent->child_list->head->tokenInfo->lexeme, node->child_list->head->tokenInfo->lexeme) == 0)
-    //         {
-    //             printf("Line %d: 'For' loop variable %s cannot be assigned a value\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
-    //             return;
-    //         }
-    //     }
-
-    //     flag1 = 0;
-    //     flag2 = 0;
-    //     char *type;
-    //     // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
-    //     if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
-    //     {
-    //         type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling->sibling);
-    //     }
-    //     else //lvalueIDStmt_ast
-    //     {
-    //         astNode *rhs = node->child_list->head->sibling->child_list->head->sibling;
-    //         if (rhs->n_Name == var_id_num_ast)
-    //         {
-    //             Node *n = lookupID(node->tb, rhs->child_list->head->tokenInfo->lexeme);
-    //             if (n && n->SymbolTableNode->variable.var_tag == 1) //Array assignment. Do bound and type check
-    //             {
-    //                 check_array_assignment(node);
-    //             }
-    //             return;
-    //         }
-    //         type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling);
-    //     }
-    //     Node *typeLhs = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
-
-    //     if ((type == NULL && flag1 == 0) || (type && strcmp(type, typeLhs->SymbolTableNode->variable.addr) != 0 && flag1 == 0))
-    //         printf("Line %d: Type Mismatch\n", node->child_list->head->tokenInfo->lineno);
-    // }
-
     if (node->n_Name == itr_while_ast)
     {
         // trie *trie = node->tb->parent->SymbolTableNode->block.trie;
@@ -189,57 +148,7 @@ void traverseModule(astNode *node, List *output_list, error_list *list)
     //assignment statement
     if (node->n_Name == assignmentStmt_ast)
     {
-        //     if (node->parent->n_Name == itr_for_ast)
-        //     {
-        //         astNode *parent = node->parent;
-        //         if (strcmp(parent->child_list->head->tokenInfo->lexeme, node->child_list->head->tokenInfo->lexeme) == 0)
-        //         {
-        //             printf("Line %d: 'For' loop variable %s cannot be assigned a value\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme);
-        //             return;
-        //         }
-        //     }
-
-        //     flag1 = 0;
-        //     flag2 = 0;
-        //     char *type;
-        //     Node *typeLhs = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
-        //     if (typeLhs == NULL)
-        //         return;
-        //     // printf("Hi  -- %s\n", node->child_list->head->tokenInfo->lexeme);
-        //     if (node->child_list->head->sibling->n_Name == lvalueARRStmt_ast)
-        //     {
-        //         Node *n = lookupID(node->tb, node->child_list->head->tokenInfo->lexeme);
-        //         char *check = checkArray(n, node->child_list->head->sibling->child_list->head->child_list->head->tokenInfo, node->child_list->head->tokenInfo->lineno);
-
-        //         type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling->sibling);
-        //     }
-        //     else //lvalueIDStmt_ast
-        //     {
-        //         astNode *rhs = node->child_list->head->sibling->child_list->head->sibling;
-        //         if (rhs->n_Name == var_id_num_ast)
-        //         {
-        //             Node *n = lookupID(node->tb, rhs->child_list->head->tokenInfo->lexeme);
-        //             if (n == NULL)
-        //                 printf("%s----\n", rhs->child_list->head->tokenInfo->lexeme);
-        //             if (n && n->SymbolTableNode->variable.var_tag == 1 && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //Array assignment. Do bound and type check
-        //             {
-        //                 // printf("Here\n");
-        //                 check_array_assignment(node);
-        //                 return;
-        //             }
-        //             else if (n && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //expression of type  array_variable = integer
-        //             {
-        //                 printf("Line %d: Variables '%s' and '%s' are of different types\n", node->child_list->head->tokenInfo->lineno, node->child_list->head->tokenInfo->lexeme, rhs->child_list->head->tokenInfo->lexeme);
-        //                 return;
-        //             }
-        //         }
-        //         type = processAssignmentStmt(node->child_list->head->sibling->child_list->head->sibling);
-        //     }
-
-        //     if ((type == NULL && flag1 == 0) || (type && strcmp(type, typeLhs->SymbolTableNode->variable.addr) != 0 && flag1 == 0))
-        //         printf("Line %d: Type Mismatch\n", node->child_list->head->tokenInfo->lineno);
-
-        //     //check whether the output variable has been assigned any value
+        //check whether the output variable has been assigned any value
         List *out_node = retrieveOutList(output_list, node->child_list->head->tokenInfo->lexeme);
         if (out_node)
         {

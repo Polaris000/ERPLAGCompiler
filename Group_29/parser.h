@@ -47,9 +47,9 @@ TreeNode *deQueue(Queue *q);
 TreeNode *first(Queue *q);
 TreeNode *last(Queue *q);
 ParseTree *initialize_tree();
-void printNode(TreeNode *node, FILE *fp);
-void printParseTree_inorder(TreeNode *pt, char *filename);
-void printParseTree_inorder_util(TreeNode *pt, FILE *fpt);
+void printNode(TreeNode *node);
+void printParseTree_inorder(TreeNode *pt);
+void printParseTree_inorder_util(TreeNode *pt);
 void printParseTree_levelOrder(TreeNode *pt, char *filename);
 
 TreeNode *initialize_internalnode(int tag, char *lexeme, NonTerminal parent, NonTerminal nt);

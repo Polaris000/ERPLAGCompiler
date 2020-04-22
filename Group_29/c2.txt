@@ -15,6 +15,7 @@ start
 	z:= x + y*b +(a-b)*y+ a*2 - b*x;
 	v:= z > 10 OR a<=b AND x<y AND u;	**follows left to right associativity**
         print(z);
+	print(v);
 	print(u);
 end
 
@@ -24,6 +25,7 @@ Input: Enter an integer value
 Input: Enter an integer value
 3
 Output: 9
+Output: true
 Output: true
 
 For values of x = 2 and y = 3 as run time input, print z as 9.

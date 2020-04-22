@@ -210,6 +210,7 @@ Table *populateSymbolTable(astNode *root, error_list *list)
 {
 
     baseTb = initialize_table(NULL, NULL); //creates the base table
+    baseTb->nesting_level = 0;
     populateTableRecur(baseTb, root, list);
 
     return baseTb;
@@ -249,6 +250,11 @@ void populateTableRecur(Table *tb, astNode *root, error_list *list)
         if (root->n_Name == module_ast)
         {
             // printf("Hello1****%s\n", root->child_list->head->tokenInfo->lexeme);
+            temp = NULL;
+        }
+        if (root->n_Name == itr_for_ast || root->n_Name == itr_while_ast || root->n_Name == conditionalStmt_ast)
+        {
+            // printf("I'm There for driver\n");
             temp = NULL;
         }
         while (temp)
@@ -298,6 +304,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
             if (check == NULL) //If module name doesn't exist
             {
                 Table *t1 = insertST(chi->head->tokenInfo->lexeme, tb, 1);
+                t1->nesting_level = 1;
                 // temp = chi->head->sibling;
                 // printf("%s\n", temp->child_list->head->tokenInfo->lexeme);
                 Node *n = lookUpST(chi->head->tokenInfo->lexeme, tb);
@@ -318,6 +325,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
             else // If same name module already exists
             {
                 Table *t1 = check->SymbolTableNode->block.scope;
+                t1->nesting_level = 1;
                 temp = chi->head;
                 // Node *n = lookUpST(chi->head->tokenInfo->lexeme, tb);
                 check->SymbolTableNode->block.decl_required = 0;
@@ -339,6 +347,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
                 appendError_at_head(list, err, chi->head->tokenInfo->lineno);
 
                 Table *t1 = insertST(chi->head->tokenInfo->lexeme, tb, 1);
+                t1->nesting_level = 1;
                 // temp = chi->head->sibling;
                 // printf("%s\n", temp->child_list->head->tokenInfo->lexeme);
                 Node *n = lookUpST(chi->head->tokenInfo->lexeme, tb);
@@ -361,6 +370,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
             {
                 // printf("Hello---****************\n");
                 Table *t1 = check->SymbolTableNode->block.scope;
+                t1->nesting_level = 1;
                 temp = chi->head->sibling;
 
                 check->SymbolTableNode->block.decl_required = 0;
@@ -420,6 +430,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
     else if (node->n_Name == declareStmt_ast)
     {
         // printf("Hello----------4\n");
+        node->tb = tb;
         Children *chi = node->child_list;
         // printf("***%s***\n", dType);
         astNode *temp = chi->head->child_list->head;
@@ -474,6 +485,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
                 // printf("***%s***\n", temp_type->tokenInfo->lexeme);
                 node->SymbolTableNode->variable.addr = temp_type->tokenInfo->lexeme;
                 node->SymbolTableNode->variable.offset = global_offset;
+                node->SymbolTableNode->variable.var_tag = 0;
                 if (strcmp(temp_type->tokenInfo->lexeme, "integer") == 0)
                 {
                     global_offset += 2;
@@ -516,6 +528,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
                     while (in_list->next)
                         in_list = in_list->next;
                     in_list->next = templist;
+                    templist->prev = in_list;
                 }
                 else
                 {
@@ -533,6 +546,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
                     while (in_list->next)
                         in_list = in_list->next;
                     in_list->next = templist;
+                    templist->prev = in_list;
                 }
                 else
                 {
@@ -559,6 +573,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
                 while (out_list->next)
                     out_list = out_list->next;
                 out_list->next = templist;
+                templist->prev = out_list;
             }
             else
             {
@@ -630,6 +645,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
     {
         driver_traversed = 1;
         Table *t1 = insertST("drivermodule", tb, 1);
+        t1->nesting_level = tb->nesting_level + 1;
         populateTableRecur(t1, node, list);
     }
     else if (node->n_Name == itr_for_ast)
@@ -660,23 +676,26 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
             appendError_at_head(list, err, temp->tokenInfo->lineno);
         }
 
-        t1 = insertST(temp->tokenInfo->lexeme, t1, 0);
-        Node *n = lookUpST(temp->tokenInfo->lexeme, t1);
+        // t1 = insertST(temp->tokenInfo->lexeme, t1, 0);
+        // Node *n = lookUpST(temp->tokenInfo->lexeme, t1);
 
         temp = temp->sibling; //temp points to range_ast
 
-        if (check)
-        {
-            n->SymbolTableNode->variable.addr = check->SymbolTableNode->variable.addr;
-            n->SymbolTableNode->variable.offset = check->SymbolTableNode->variable.offset;
-        }
+        // if (check)
+        // {
+        //     n->SymbolTableNode->variable.addr = check->SymbolTableNode->variable.addr;
+        //     n->SymbolTableNode->variable.offset = check->SymbolTableNode->variable.offset;
+        // }
 
-        n->SymbolTableNode->variable.lower_index = temp->child_list->head->tokenInfo;
-        n->SymbolTableNode->variable.upper_index = temp->child_list->head->sibling->tokenInfo;
+        // n->SymbolTableNode->variable.lower_index = temp->child_list->head->tokenInfo;
+        // n->SymbolTableNode->variable.upper_index = temp->child_list->head->sibling->tokenInfo;
         // printf("%s -- %s\n", n->SymbolTableNode->variable.lower_index->lexeme, n->SymbolTableNode->variable.upper_index->lexeme);
+
         Node *where_for = lookUpST(stringconcat(itoa(tb->parent->SymbolTableNode->block.num_for - 1), "for"), tb);
         where_for->SymbolTableNode->block.lower_scope = temp->sibling->tokenInfo->lineno; //store the lower scope
+        t1->nesting_level = tb->nesting_level + 1;
 
+        node->tb = t1;
         processModule(t1, node, list);
     }
     else if (node->n_Name == itr_while_ast)
@@ -698,6 +717,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
         Node *n = lookUpST(stringconcat(itoa(tb->parent->SymbolTableNode->block.num_while - 1), "while"), tb);
 
         n->SymbolTableNode->block.lower_scope = temp->sibling->tokenInfo->lineno; //to store the lower scope
+        t1->nesting_level = tb->nesting_level + 1;
 
         trie *trie = initialize_trie();
         trie = populateTrie(trie, node->child_list->head);
@@ -717,6 +737,7 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
         Children *chi = node->child_list;
         astNode *temp = chi->head;
         n->SymbolTableNode->block.lower_scope = temp->sibling->tokenInfo->lineno; //store the lower scope
+        t1->nesting_level = tb->nesting_level + 1;
         //check whether the conditional variable has been declared or not
         Table *parent_table = tb;
         Node *check;
@@ -756,15 +777,18 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
             n->SymbolTableNode->block.addr = check->SymbolTableNode->variable.addr;
         }
 
+        astNode *default_node = chi->head;
+        while (default_node && default_node->sibling && default_node->sibling->sibling)
+            default_node = default_node->sibling;
         // //If condition variable is of type Integer then default is compulsory
-        if (check && strcmp(check->SymbolTableNode->variable.addr, "integer") == 0 && chi->tail->n_Name != default_ast)
+        if (check && strcmp(check->SymbolTableNode->variable.addr, "integer") == 0 && default_node->n_Name != default_ast)
         {
             char *err = malloc(sizeof(char) * 200);
             sprintf(err, "Line %d: default statement is missing- the type of switch variable is integer\n", temp->tokenInfo->lineno);
             appendError_at_head(list, err, temp->tokenInfo->lineno);
         }
         // printf("Line %d: default statement is missing- the type of switch variable is integer\n", temp->tokenInfo->lineno);
-        else if (check && strcmp(check->SymbolTableNode->variable.addr, "boolean") == 0 && chi->tail->n_Name == default_ast)
+        else if (check && strcmp(check->SymbolTableNode->variable.addr, "boolean") == 0 && default_node->n_Name == default_ast)
         {
             char *err = malloc(sizeof(char) * 200);
             sprintf(err, "Line %d: Presence of default statement is incorrect as condiiton variable type is boolean\n", temp->tokenInfo->lineno);
@@ -805,9 +829,14 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
             }
             // printf("Line %d: Case value is incorrect as condition variable type is %s\n", temp->tokenInfo->lineno, "boolean");
         }
+
+        node->tb = tb;
     }
     else if (node->n_Name == var_id_num_ast)
+    {
+        // printf("Hello-------var_id_num\n");
         node->tb = tb;
+    }
 
     else if (node->n_Name == assignmentStmt_ast)
     {
@@ -847,8 +876,8 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
             if (rhs->n_Name == var_id_num_ast)
             {
                 Node *n = lookupID(node->tb, rhs->child_list->head->tokenInfo->lexeme);
-                if (n == NULL)
-                    printf("%s----\n", rhs->child_list->head->tokenInfo->lexeme);
+                // if (n == NULL)
+                // printf("%s----\n", rhs->child_list->head->tokenInfo->lexeme);
                 if (n && n->SymbolTableNode->variable.var_tag == 1 && typeLhs && typeLhs->SymbolTableNode->variable.var_tag == 1) //Array assignment. Do bound and type check
                 {
                     // printf("Here\n");
@@ -881,6 +910,13 @@ Table *processNode(Table *tb, astNode *node, error_list *list)
         node->tb = tb;
     else if (node->n_Name == ioStmt_get_value_ist)
         node->tb = tb;
+    else if (node->n_Name == default_ast)
+        node->tb = tb;
+    else if (node->tokenInfo && strcmp(node->tokenInfo->lexeme, "end") == 0)
+    {
+        // printf("Here updaing line number - %d\n", node->tokenInfo->lineno);
+        tb->parent->SymbolTableNode->block.upper_scope = node->tokenInfo->lineno;
+    }
     else
     {
         // printf("Hello from else\n");
@@ -917,12 +953,16 @@ void processModule(Table *tb, astNode *node, error_list *list)
     {
         temp = chi->head;
 
-        if ((node->n_Name == module_ast) || (node->n_Name == conditionalStmt_ast && tb->container->parent && lookUpST(stringconcat(itoa(tb->container->parent->SymbolTableNode->block.num_switch - 1), "switch"), tb->container) != NULL) || (node->n_Name == itr_while_ast && tb->container->parent && lookUpST(stringconcat(itoa(tb->container->parent->SymbolTableNode->block.num_while - 1), "while"), tb->container) != NULL))
+        if ((node->n_Name == module_ast) || (node->n_Name == conditionalStmt_ast && tb->container->parent && lookUpST(stringconcat(itoa(tb->container->parent->SymbolTableNode->block.num_switch - 1), "switch"), tb->container) != NULL))
         {
             temp = chi->head->sibling;
             // printf("I'm Here\n");
         }
-
+        if (node->n_Name == itr_while_ast && tb->container->parent && lookUpST(stringconcat(itoa(tb->container->parent->SymbolTableNode->block.num_while - 1), "while"), tb->container) != NULL)
+        {
+            temp = chi->head;
+            // printf("I'm Here start while\n");
+        }
         if (node->n_Name == itr_for_ast && tb->container->parent && lookUpST(stringconcat(itoa(tb->container->parent->SymbolTableNode->block.num_for - 1), "for"), tb->container) != NULL)
         {
             temp = chi->head->sibling->sibling;
@@ -953,32 +993,38 @@ void processModule(Table *tb, astNode *node, error_list *list)
 
 void printSymbolTable(Table *tb)
 {
-    printf("%10s \t %20s \t %5s \t %5s \t %8s \t %8s \t %8s \t %8s \t %5s \t %5s\n",
-           "variable_name", "scope(module_name)", "scope(line_num)", "width", "isArray", "static_or_dynamic", "range_lexemes",
-           "type_of_element", "offset", "nesting_level");
+    printf("%10s \t %20s \t %5s \t %5s \t %7s \t %17s \t %10s \t %12s \t %5s \t %13s\n",
+           "variable_name", "scope(module_name)", "scope", "width", "isArray", "static_or_dynamic", "range_lexemes",
+           "element_type", "offset", "nesting_level");
 
     printSymbolTableUtil(tb);
 }
 
-void printTableEntry(Node *n, Table *tb)
+void printTableEntry(Node *n, Table *tb, int nesting_level)
 {
     Table *parentTable = tb;
     while (parentTable->container && parentTable->container->parent)
     {
         parentTable = parentTable->container;
     }
-    // if (strcmp(n->SymbolTableNode->variable.addr, "integer") == 0)
-    //     printf("%10s \t %20s \t %5s \t %5s \t %8s \t %8s \t %8s \t %8s \t %5d \t %5s\n",
-    //            n->val, parentTable->parent->val, "---", "2", "---", "---", "---", n->SymbolTableNode->variable.addr, n->SymbolTableNode->variable.offset, "---");
-    // else if (strcmp(n->SymbolTableNode->variable.addr, "real") == 0)
-    //     printf("%10s \t %20s \t %5s \t %5s \t %8s \t %8s \t %8s \t %8s \t %5d \t %5s\n",
-    //            n->val, parentTable->parent->val, "---", "4", "---", "---", "---", n->SymbolTableNode->variable.addr, n->SymbolTableNode->variable.offset, "---");
 
-    // else if (strcmp(n->SymbolTableNode->variable.addr, "boolean") == 0)
-    //     printf("%10s \t %20s \t %5s \t %5s \t %8s \t %8s \t %8s \t %8s \t %5d \t %5s\n",
-    //            n->val, parentTable->parent->val, "---", "1", "---", "---", "---", n->SymbolTableNode->variable.addr, n->SymbolTableNode->variable.offset, "---");
-    printf("%10s \t %20s \t %5s \t %5d \t %8s \t %8s \t %8s \t %8s \t %5d \t %5s\n",
-           n->val, tb->parent->val, "---", n->SymbolTableNode->variable.width, "---", "---", "---", n->SymbolTableNode->variable.addr, n->SymbolTableNode->variable.offset, "---");
+    if (n->SymbolTableNode->variable.var_tag == 1)
+    {
+        Variable v = n->SymbolTableNode->variable;
+        if (n->SymbolTableNode->variable.lower_index->t == NUM && n->SymbolTableNode->variable.upper_index->t == NUM) // static array
+        {
+            printf("%10s \t %20s \t %2d-%2d \t %5d \t %8s \t %17s \t [%4s,%4s] \t %12s \t %5d \t %10d\n",
+                   n->val, parentTable->parent->val, tb->parent->SymbolTableNode->block.lower_scope, tb->parent->SymbolTableNode->block.upper_scope, v.width, "yes", "static", v.lower_index->lexeme, v.upper_index->lexeme, v.addr, v.offset, nesting_level);
+        }
+        else //dynamic array
+        {
+            printf("%10s \t %20s \t %2d-%2d \t %5d \t %8s \t %17s \t [%4s,%4s] \t %12s \t %5d \t %10d\n",
+                   n->val, parentTable->parent->val, tb->parent->SymbolTableNode->block.lower_scope, tb->parent->SymbolTableNode->block.upper_scope, v.width, "yes", "dynamic", v.lower_index->lexeme, v.upper_index->lexeme, v.addr, v.offset, nesting_level);
+        }
+    }
+    else
+        printf("%10s \t %20s \t %2d-%2d \t %5d \t %8s \t %17s \t %10s \t %12s \t %5d \t %10d\n",
+               n->val, parentTable->parent->val, tb->parent->SymbolTableNode->block.lower_scope, tb->parent->SymbolTableNode->block.upper_scope, n->SymbolTableNode->variable.width, "no", "---", "---", n->SymbolTableNode->variable.addr, n->SymbolTableNode->variable.offset, nesting_level);
 }
 
 void printSymbolTableUtil(Table *tb)
@@ -991,7 +1037,7 @@ void printSymbolTableUtil(Table *tb)
             if (node->tag == 0) // for variable
             {
                 // printf("%s %15s\t %6s\t %d\n", node->val, node->SymbolTableNode->variable.addr, node->SymbolTableNode->variable.offset);
-                printTableEntry(node, tb);
+                printTableEntry(node, tb, tb->nesting_level);
             }
             else // for block
             {
@@ -1016,7 +1062,7 @@ void printSymbolTableUtil(Table *tb)
                         tempnode->SymbolTableNode->variable.offset = in_list->offset;
                         tempnode->SymbolTableNode->variable.width = in_list->width;
 
-                        printTableEntry(tempnode, node->SymbolTableNode->block.scope);
+                        printTableEntry(tempnode, node->SymbolTableNode->block.scope, 0);
                         in_list = in_list->next;
                         free(tempnode);
                     }
@@ -1039,7 +1085,7 @@ void printSymbolTableUtil(Table *tb)
                         tempnode->SymbolTableNode->variable.offset = out_list->offset;
                         tempnode->SymbolTableNode->variable.width = out_list->width;
 
-                        printTableEntry(tempnode, node->SymbolTableNode->block.scope);
+                        printTableEntry(tempnode, node->SymbolTableNode->block.scope, 0);
                         out_list = out_list->next;
                         free(tempnode);
                     }
@@ -1063,6 +1109,8 @@ List *createListNode(char *val, char *addr, int var_tag, Leaf *lower_bound, Leaf
     temp->upper_index = upper_bound;
     temp->assigned = 0;
     temp->next = NULL;
+    temp->prev = NULL;
+
     if (var_tag == 0 && strcmp(addr, "integer") == 0)
     {
         temp->offset = global_offset;
@@ -1124,4 +1172,89 @@ trie *populateTrie(trie *trie, astNode *node)
         insert_trie(trie, node->tokenInfo->lexeme, 0);
     }
     return trie;
+}
+
+void calcMemoryofFunctions(Table *tb)
+{
+    printf("\n\n---------------------Printing the total Memory Requirements of all Functions-----------------------\n\n");
+    for (int i = 0; i < tb->num; i++)
+    {
+        Node *node = tb->nodes[i];
+        while (node != NULL)
+        {
+            if (node->tag != 0 && strcmp(node->val, "drivermodule") != 0)
+            {
+                printf("\t%s \t", node->val);
+                int size = 0;
+                calMemoryFunction(node->SymbolTableNode->block.scope, &size);
+                printf("%d\n", size);
+            }
+
+            node = node->next;
+        }
+    }
+}
+
+void calMemoryFunction(Table *tb, int *mem)
+{
+    for (int i = 0; i < tb->num; i++)
+    {
+        Node *node = tb->nodes[i];
+        while (node != NULL)
+        {
+            if (node->tag == 0) // for variable
+            {
+                *mem += node->SymbolTableNode->variable.width;
+            }
+            else // for block
+            {
+                calMemoryFunction(node->SymbolTableNode->block.scope, mem);
+            }
+            node = node->next;
+        }
+    }
+}
+
+void printArrays(Table *tb)
+{
+    for (int i = 0; i < tb->num; i++)
+    {
+        Node *node = tb->nodes[i];
+        while (node != NULL)
+        {
+            if (node->tag == 0 && node->SymbolTableNode->variable.var_tag == 1) // for variable
+            {
+                printArrayInfo(node, tb);
+            }
+            else // for block
+            {
+                printArrays(node->SymbolTableNode->block.scope);
+            }
+            node = node->next;
+        }
+    }
+}
+
+void printArrayInfo(Node *n, Table *tb)
+{
+    Table *parentTable = tb;
+    while (parentTable->container && parentTable->container->parent)
+    {
+        parentTable = parentTable->container;
+    }
+
+    if (n->SymbolTableNode->variable.var_tag == 1)
+    {
+        Variable v = n->SymbolTableNode->variable;
+        if (n->SymbolTableNode->variable.lower_index->t == NUM && n->SymbolTableNode->variable.upper_index->t == NUM) // static array
+        {
+            printf("%20s \t %4d-%4d \t%20s \t %12s \t  [%4s,%4s]\t %8s\n",
+                   parentTable->parent->val, tb->parent->SymbolTableNode->block.lower_scope, tb->parent->SymbolTableNode->block.upper_scope, n->val, "static array", v.lower_index->lexeme, v.upper_index->lexeme, v.addr);
+        }
+        else //dynamic array
+        {
+            printf("%20s \t %4d-%4d \t%20s \t %12s \t  [%4s,%4s]\t %8s\n",
+                   parentTable->parent->val, tb->parent->SymbolTableNode->block.lower_scope, tb->parent->SymbolTableNode->block.upper_scope, n->val, "dynamic array", v.lower_index->lexeme, v.upper_index->lexeme, v.addr);
+        }
+    }
 }

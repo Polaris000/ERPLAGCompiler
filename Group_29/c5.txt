@@ -11,7 +11,7 @@ start
 	get_value(A);
 	get_value(B);
 	for(m in 6..10)
-        start
+    start
 		temp:= A[m]+B[m];
 		print(temp);
 		C[m]:= temp;

@@ -20,7 +20,7 @@ astNode *postOrder_ParseTree(ParseTree *pt)
         return NULL;
 
     postOrderRecur(pt->root);
-
+    // printf("Here---hello\n");
     astNode *ast = pt->root->addr;
     return ast;
 }
@@ -39,6 +39,8 @@ void postOrderRecur(TreeNode *node)
         if (children != NULL)
         {
             int size = data.internalnode.rhs_size;
+            // if (node->t.internalnode.nodesym == program)
+            // printf("child of program %d\n", size);
             int i = 0;
             while (size--)
             {
@@ -46,9 +48,11 @@ void postOrderRecur(TreeNode *node)
                 i++;
             }
         }
+
         // if (node->t.internalnode.nodesym == program)
-        //     printf("Here - %s\n", nonTerminalEnumToString[data.internalnode.nodesym]);
-        // printf("Hello -- %s -- ", nonTerminalEnumToString[node->t.internalnode.nodesym]);
+        //     printf("program-\n");
+        // printf("Here - %s\n", nonTerminalEnumToString[data.internalnode.nodesym]);
+        // printf("Hello -- %s -- \n", nonTerminalEnumToString[node->t.internalnode.nodesym]);
         applyASTRule_Node(node);
     }
 }
@@ -164,6 +168,7 @@ void applyASTRule_Node(TreeNode *node)
     {
     case 0: //<program> -> <moduleDeclarations> <otherModules> <driverModule> <otherModules>
     {
+        // printf("Here-----ast\n");
         astNode *ast = createNode(program_ast, NULL, NULL, NULL);
         populateChild(node, ast);
         populateParent(ast);
@@ -172,11 +177,14 @@ void applyASTRule_Node(TreeNode *node)
         free(node->t.internalnode.children[1]);
         free(node->t.internalnode.children[2]);
         free(node->t.internalnode.children[3]);
+
+        // printf("Here----ast_end\n");
         break;
     }
     case 1: //<moduleDeclarations> -> <moduleDeclaration> <moduleDeclarations> | e
     case 3: //<otherModules> ->  <module> <otherModules> | e
     {
+
         if (node->rule_no == 0)
         {
             node->t.internalnode.children[0]->addr->sibling = node->t.internalnode.children[1]->addr;
@@ -188,6 +196,7 @@ void applyASTRule_Node(TreeNode *node)
         {
             astNode *ast = createNode(eps, NULL, NULL, NULL);
             node->addr = ast;
+            // printf("Here--module\n");
         }
         break;
     }
@@ -203,6 +212,7 @@ void applyASTRule_Node(TreeNode *node)
     }
     case 4: //<driverModule> -> DRIVERDEF DRIVER PROGRAM DRIVERENDDEF <moduleDef>
     {
+        // printf("Here\n");
         astNode *ast = createNode(driverModule_ast, NULL, NULL, NULL);
         populateChild(node, ast);
         populateParent(ast);
@@ -212,6 +222,7 @@ void applyASTRule_Node(TreeNode *node)
         free(node->t.internalnode.children[2]);
         free(node->t.internalnode.children[3]);
         free(node->t.internalnode.children[4]);
+        // printf("Here_end\n");
         break;
     }
     case 5: //<module> ->  DEF MODULE ID ENDDEF TAKES INPUT SQBO <input_plist> SQBC SEMICOL <ret> <moduleDef>
@@ -630,13 +641,19 @@ void applyASTRule_Node(TreeNode *node)
         {
             astNode *temp = node->t.internalnode.children[1]->addr;
             Children *temp_child = temp->child_list;
+            node->addr = temp;
+            while (temp_child->children_size == 2)
+            {
+                temp = temp_child->head;
+                temp_child = temp_child->head->child_list;
+            }
 
             temp_child->head = node->t.internalnode.children[0]->addr;
             temp_child->head->sibling = temp_child->tail;
             temp_child->head->parent = temp;
             temp_child->children_size++;
 
-            node->addr = temp;
+            // node->addr = temp;
         }
         else
         {
@@ -716,21 +733,43 @@ void applyASTRule_Node(TreeNode *node)
             }
             else
             {
+                // astNode *temp = node->t.internalnode.children[2]->addr;
+                // Children *temp_child = temp->child_list;
+                // temp_child->head = node->t.internalnode.children[1]->addr;
+                // temp_child->head->sibling = temp_child->tail;
+                // temp_child->head->parent = temp;
+                // temp_child->children_size++;
+
+                // chi->head = temp;
+                // chi->tail = temp;
+                // chi->children_size++;
+                // chi->head->parent = newNode;
+
+                // newNode->parent = node->addr;
+                // newNode->child_list = chi;
+                // node->addr = newNode;
+
                 astNode *temp = node->t.internalnode.children[2]->addr;
+                astNode *newNode2 = node->t.internalnode.children[0]->addr; //node of +/-
+
+                chi->head = node->t.internalnode.children[1]->addr;
+                chi->tail = node->t.internalnode.children[1]->addr;
+                chi->children_size++;
+                chi->head->parent = newNode2;
+                newNode2->child_list = chi;
+
                 Children *temp_child = temp->child_list;
-                temp_child->head = node->t.internalnode.children[1]->addr;
+                while (temp_child->children_size == 2)
+                {
+                    temp = temp_child->head;
+                    temp_child = temp_child->head->child_list;
+                }
+                temp_child->head = newNode2;
                 temp_child->head->sibling = temp_child->tail;
                 temp_child->head->parent = temp;
                 temp_child->children_size++;
 
-                chi->head = temp;
-                chi->tail = temp;
-                chi->children_size++;
-                chi->head->parent = newNode;
-
-                newNode->parent = node->addr;
-                newNode->child_list = chi;
-                node->addr = newNode;
+                node->addr = node->t.internalnode.children[2]->addr;
             }
         }
         else
@@ -746,12 +785,19 @@ void applyASTRule_Node(TreeNode *node)
         {
             astNode *temp = node->t.internalnode.children[1]->addr;
             Children *temp_child = temp->child_list;
+            node->addr = temp;
+            while (temp_child->children_size == 2)
+            {
+                temp = temp_child->head;
+                temp_child = temp_child->head->child_list;
+            }
+
             temp_child->head = node->t.internalnode.children[0]->addr;
             temp_child->head->sibling = temp_child->tail;
             temp_child->head->parent = temp;
             temp_child->children_size++;
 
-            node->addr = temp;
+            // node->addr = temp;
         }
         else
         {
@@ -780,20 +826,42 @@ void applyASTRule_Node(TreeNode *node)
             }
             else
             {
+                // astNode *temp = node->t.internalnode.children[2]->addr;
+                // Children *temp_child = temp->child_list;
+                // temp_child->head = node->t.internalnode.children[1]->addr;
+                // temp_child->head->sibling = temp_child->tail;
+                // temp_child->head->parent = temp;
+                // temp_child->children_size++;
+
+                // chi->head = temp;
+                // chi->tail = temp;
+                // chi->children_size++;
+                // chi->head->parent = newNode;
+
+                // newNode->child_list = chi;
+                // node->addr = newNode;
+
                 astNode *temp = node->t.internalnode.children[2]->addr;
+                astNode *newNode2 = node->t.internalnode.children[0]->addr; //node of +/-
+
+                chi->head = node->t.internalnode.children[1]->addr;
+                chi->tail = node->t.internalnode.children[1]->addr;
+                chi->children_size++;
+                chi->head->parent = newNode2;
+                newNode2->child_list = chi;
+
                 Children *temp_child = temp->child_list;
-                temp_child->head = node->t.internalnode.children[1]->addr;
+                while (temp_child->children_size == 2)
+                {
+                    temp = temp_child->head;
+                    temp_child = temp_child->head->child_list;
+                }
+                temp_child->head = newNode2;
                 temp_child->head->sibling = temp_child->tail;
                 temp_child->head->parent = temp;
                 temp_child->children_size++;
 
-                chi->head = temp;
-                chi->tail = temp;
-                chi->children_size++;
-                chi->head->parent = newNode;
-
-                newNode->child_list = chi;
-                node->addr = newNode;
+                node->addr = node->t.internalnode.children[2]->addr;
             }
         }
         else
@@ -802,18 +870,24 @@ void applyASTRule_Node(TreeNode *node)
         }
         break;
     }
-    case 40: //<term> ->  <factor> <term_dash>
+    case 40: //<term> ->  <factor><term_dash>
     {
         if (node->t.internalnode.children[1]->addr)
         {
             astNode *temp = node->t.internalnode.children[1]->addr;
             Children *temp_child = temp->child_list;
+            node->addr = temp;
+            while (temp_child->children_size == 2)
+            {
+                temp = temp_child->head;
+                temp_child = temp_child->head->child_list;
+            }
             temp_child->head = node->t.internalnode.children[0]->addr;
             temp_child->head->sibling = temp_child->tail;
             temp_child->head->parent = temp;
             temp_child->children_size++;
 
-            node->addr = temp;
+            // node->addr = temp;
         }
         else
         {
@@ -842,20 +916,42 @@ void applyASTRule_Node(TreeNode *node)
             }
             else
             {
+                // astNode *temp = node->t.internalnode.children[2]->addr;
+                // Children *temp_child = temp->child_list;
+                // temp_child->head = node->t.internalnode.children[1]->addr;
+                // temp_child->head->parent = temp;
+                // temp_child->head->sibling = temp_child->tail;
+                // temp_child->children_size++;
+
+                // chi->head = temp;
+                // chi->tail = temp;
+                // chi->children_size++;
+                // chi->head->parent = newNode;
+
+                // newNode->child_list = chi;
+                // node->addr = newNode;
+
                 astNode *temp = node->t.internalnode.children[2]->addr;
+                astNode *newNode2 = node->t.internalnode.children[0]->addr; //node of * | /
+
+                chi->head = node->t.internalnode.children[1]->addr;
+                chi->tail = node->t.internalnode.children[1]->addr;
+                chi->children_size++;
+                chi->head->parent = newNode2;
+                newNode2->child_list = chi;
+
                 Children *temp_child = temp->child_list;
-                temp_child->head = node->t.internalnode.children[1]->addr;
-                temp_child->head->parent = temp;
+                while (temp_child->children_size == 2)
+                {
+                    temp = temp_child->head;
+                    temp_child = temp_child->head->child_list;
+                }
+                temp_child->head = newNode2;
                 temp_child->head->sibling = temp_child->tail;
+                temp_child->head->parent = temp;
                 temp_child->children_size++;
 
-                chi->head = temp;
-                chi->tail = temp;
-                chi->children_size++;
-                chi->head->parent = newNode;
-
-                newNode->child_list = chi;
-                node->addr = newNode;
+                node->addr = node->t.internalnode.children[2]->addr;
             }
         }
         else
@@ -1160,4 +1256,65 @@ void printAstRecur(astNode *node)
             temp = temp->sibling;
         }
     }
+}
+
+void Compression_Ratio_calc(TreeNode *root, astNode *root_ast)
+{
+    int PTree_num = 0;
+    int ptree_mem = 0;
+    PTreeRecur(root, &PTree_num, &ptree_mem);
+
+    int ast_num = 0;
+    int ast_mem = 0;
+    ASTRecur(root_ast, &ast_num, &ast_mem);
+
+    printf("\n\nParse tree Number of nodes = %d\n", PTree_num);
+    printf("Allocated Memory = %d Bytes\n", ptree_mem);
+
+    printf("\nAST Number of nodes = %d\n", ast_num);
+    printf("Allocated Memory = %d Bytes\n", ast_mem);
+
+    double comp_ratio = ((ptree_mem - ast_mem) / (double)ptree_mem) * 100;
+
+    printf("Compression Precentage = %lf %%\n\n", comp_ratio);
+}
+
+void PTreeRecur(TreeNode *root, int *count, int *mem)
+{
+    if (root == NULL)
+        return;
+
+    TreeNode *tmp = root;
+
+    if (root->tag == 0)
+    {
+        for (int i = 0; i < tmp->t.internalnode.rhs_size; i++)
+        {
+            PTreeRecur(tmp->t.internalnode.children[i], count, mem);
+        }
+    }
+
+    *count = *count + 1;
+    *mem = *mem + sizeof(root);
+}
+
+void ASTRecur(astNode *node, int *count, int *mem)
+{
+    if (node == NULL)
+        return;
+
+    Children *chi = node->child_list;
+    astNode *temp;
+    if (chi)
+    {
+        temp = chi->head;
+        while (temp)
+        {
+            ASTRecur(temp, count, mem);
+            temp = temp->sibling;
+        }
+    }
+
+    *count = *count + 1;
+    *mem = *mem + sizeof(node);
 }

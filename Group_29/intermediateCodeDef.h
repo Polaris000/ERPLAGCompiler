@@ -9,11 +9,16 @@
 #ifndef _intermediateCodeDef_
 #define _intermediateCodeDef_
 
-typedef struct tempreg tempReg;
-typedef struct tempreg
+// typedef struct tempreg tempReg;
+// typedef struct tempreg
+// {
+//         char *reg;
+//         int offset;
+// } tempReg;
+typedef struct templookup
 {
-        char *reg;
-        int offset;
-} tempReg;
+        Node *n;
+        Table *t;
+} templookup;
 
 #endif

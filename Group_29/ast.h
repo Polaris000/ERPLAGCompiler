@@ -23,4 +23,8 @@ void printAst(astNode *node);
 void printAstNode(astNode *node);
 void printAstRecur(astNode *node);
 
+void Compression_Ratio_calc(TreeNode *root, astNode *root_ast);
+void PTreeRecur(TreeNode *root, int *count, int *mem);
+void ASTRecur(astNode *node, int *count, int *mem);
+
 #endif

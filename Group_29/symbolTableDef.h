@@ -31,6 +31,7 @@ typedef struct List
     int offset;
     int width;
     struct List *next;
+    struct List *prev;
 } List;
 
 typedef struct block

@@ -27,6 +27,12 @@ void printSymbolTable(Table *tb);
 void printSymbolTableUtil(Table *tb);
 List *createListNode(char *val, char *addr, int var_tag, Leaf *lower_bound, Leaf *upper_bound);
 trie *populateTrie(trie *trie, astNode *node);
-void printTableEntry(Node *n, Table *tb);
+void printTableEntry(Node *n, Table *tb, int nesting_level);
+
+void calcMemoryofFunctions(Table *tb);
+void calMemoryFunction(Table *tb, int *mem);
+
+void printArrays(Table *tb);
+void printArrayInfo(Node *n, Table *tb);
 
 #endif

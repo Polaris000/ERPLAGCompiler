@@ -559,7 +559,7 @@ void printFirstSet(FirstAndFollow *F)
 
 void printFollowSet(FirstAndFollow *F)
 {
-    printf("Printing the Follow Set*************************************************************************\n");
+    printf("\n\n ----------------------------------- Printing the Follow Set ----------------------------------------\n");
 
     for (int i = 0; i < NON_TERMINALS; i++)
     {
@@ -575,7 +575,7 @@ void printFollowSet(FirstAndFollow *F)
         printf("\n");
     }
 
-    printf("Printing Finished*****************************************************************************\n\n\n\n");
+    printf("\n\n ----------------------- Printing Finished -----------------------------------------\n\n");
 }
 // ParseTable Construction---------------------------------------------------------------------------------------------------------------
 
@@ -669,7 +669,7 @@ void populateParseTable(FirstAndFollow *F, Grammar *G, ParseTable *pt)
 
 void printParseTable(ParseTable *pt)
 {
-    printf("Printing the Parse Table*************************************************************************\n");
+    printf("\n\n------------------------------ Printing the Parse Table ------------------------------------\n\n");
     for (int i = 0; i < NON_TERMINALS; i++)
     {
         printf("%s\n", nonTerminalEnumToString[i]);
@@ -680,7 +680,7 @@ void printParseTable(ParseTable *pt)
         }
         printf("\n");
     }
-    printf("ParseTable Printed **********************************************************************************\n\n\n\n");
+    printf("\n\n------------------------ParseTable Printed --------------------------------------\n\n");
 }
 
 // Parse the input source code and build the parse tree
@@ -808,6 +808,7 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
                 {
                     endOfFile = 0;
                     currLine = 1;
+
                     return pt;
                 }
             }
@@ -921,19 +922,29 @@ ParseTree *parseInputSourceCode(char *testCaseFile, ParseTable *table, Grammar *
     }
     else
     {
+        printf("What\n");
         snode = pop(st);
+        printf("happened\n");
+        if (snode)
+            printf("Hi\n");
+        printf("%s\n", nonTerminalEnumToString[snode->t.internalnode.nodesym]);
         snode->rule_no = 1;
         snode->addr = NULL;
         snode->inh = NULL;
+        printf("What\n");
         TreeNode *tmpnode = initialize_leafnode(1, EPSILON, snode->t.internalnode.nodesym);
+        printf("%s---%d\n", tmpnode->t.leafnode.lexeme, snode->t.internalnode.rhs_size);
+        //error
         snode->t.internalnode.children = realloc(snode->t.internalnode.children, sizeof(TreeNode *) * (snode->t.internalnode.rhs_size + 1));
+        printf("Heloo--\n");
         snode->t.internalnode.children[snode->t.internalnode.rhs_size] = tmpnode;
+        printf("Hi----\n");
         snode->t.internalnode.rhs_size += 1;
-
-        if (top(st)->tag == 2)
-        {
-            printf("\n\n--------------------------  Parsing Completed Successfully -----------------------------\n");
-        }
+        printf("h--\n");
+        // if (top(st)->tag == 2)
+        // {
+        //     printf("\n\n--------------------------  Parsing Completed Successfully -----------------------------\n");
+        // }
         if (count == 0)
             printf("\n\n-------------------------- Input Source Code is Syntatically Correct-------------------------\n\n");
     }
@@ -1002,24 +1013,24 @@ TreeNode *last(Queue *q)
     return q->t[q->end];
 }
 
-void printNode(TreeNode *node, FILE *fp)
+void printNode(TreeNode *node)
 {
     // if internal
     if (node->tag == 0)
     {
-        fprintf(fp, "%20s\t %20s\t %20s\t %20s\t %25s\t %20s\t %25s\n", node->t.internalnode.lexeme, "-----", "-----", "-----", nonTerminalEnumToString[node->t.internalnode.parent], "Not Leaf", nonTerminalEnumToString[node->t.internalnode.nodesym]);
+        printf("%20s\t %20s\t %20s\t %20s\t %25s\t %20s\t %25s\n", node->t.internalnode.lexeme, "-----", "-----", "-----", nonTerminalEnumToString[node->t.internalnode.parent], "Not Leaf", nonTerminalEnumToString[node->t.internalnode.nodesym]);
     }
     // if leaf
     else if (node->tag == 1)
     {
         if (node->t.leafnode.t == NUM)
-            fprintf(fp, "%20s\t %20d\t %20s\t %20d\t %25s\t %20s\t %25s\n", node->t.leafnode.lexeme, node->t.leafnode.lineno, TerminalEnumToString[node->t.leafnode.t], node->t.leafnode.val->intValue, nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
+            printf("%20s\t %20d\t %20s\t %20d\t %25s\t %20s\t %25s\n", node->t.leafnode.lexeme, node->t.leafnode.lineno, TerminalEnumToString[node->t.leafnode.t], node->t.leafnode.val->intValue, nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
         else if (node->t.leafnode.t == RNUM)
-            fprintf(fp, "%20s\t %20d\t %20s\t %5.15f\t %25s\t %20s\t %25s\n", node->t.leafnode.lexeme, node->t.leafnode.lineno, TerminalEnumToString[node->t.leafnode.t], node->t.leafnode.val->fValue, nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
+            printf("%20s\t %20d\t %20s\t %5.15f\t %25s\t %20s\t %25s\n", node->t.leafnode.lexeme, node->t.leafnode.lineno, TerminalEnumToString[node->t.leafnode.t], node->t.leafnode.val->fValue, nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
         else if (node->t.leafnode.t == EPSILON)
-            fprintf(fp, "%20s\t %20d\t %20s\t %20s\t %25s\t %20s\t %25s\n", "----", 0, TerminalEnumToString[node->t.leafnode.t], "-----", nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
+            printf("%20s\t %20d\t %20s\t %20s\t %25s\t %20s\t %25s\n", "----", 0, TerminalEnumToString[node->t.leafnode.t], "-----", nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
         else
-            fprintf(fp, "%20s\t %20d\t %20s\t %20s\t %25s\t %20s\t %25s\n", node->t.leafnode.lexeme, node->t.leafnode.lineno, TerminalEnumToString[node->t.leafnode.t], "-----", nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
+            printf("%20s\t %20d\t %20s\t %20s\t %25s\t %20s\t %25s\n", node->t.leafnode.lexeme, node->t.leafnode.lineno, TerminalEnumToString[node->t.leafnode.t], "-----", nonTerminalEnumToString[node->t.leafnode.parent], "Is Leaf", "-----");
     }
 }
 
@@ -1051,11 +1062,11 @@ void printParseTree_levelOrder(TreeNode *pt, char *filename)
             {
                 enQueue(q, tmp->t.internalnode.children[i]);
             }
-            printNode(tmp, fptr);
+            printNode(tmp);
         }
         else if (tmp->tag == 1)
         {
-            printNode(tmp, fptr);
+            printNode(tmp);
         }
         else if (tmp->tag == 2)
         {
@@ -1067,17 +1078,17 @@ void printParseTree_levelOrder(TreeNode *pt, char *filename)
     fclose(fptr);
 }
 
-void printParseTree_inorder(TreeNode *pt, char *filename)
+void printParseTree_inorder(TreeNode *pt)
 {
-    FILE *fptr = fopen(filename, "w");
+    // FILE *fptr = fopen(filename, "w");
 
-    fprintf(fptr, "%20s\t %20s\t %20s\t %20s\t %25s\t %20s\t %25s\n", "Lexeme", "LineNo", "TokenName", "ValuelfNumber", "parentNodeSymbol", "IsLeafNode", "NodeSymbol");
-    printParseTree_inorder_util(pt, fptr);
+    printf("%20s\t %20s\t %20s\t %20s\t %25s\t %20s\t %25s\n", "Lexeme", "LineNo", "TokenName", "ValuelfNumber", "parentNodeSymbol", "IsLeafNode", "NodeSymbol");
+    printParseTree_inorder_util(pt);
 
-    fclose(fptr);
+    // fclose(fptr);
 }
 
-void printParseTree_inorder_util(TreeNode *pt, FILE *fpt)
+void printParseTree_inorder_util(TreeNode *pt)
 {
     TreeNode *tmp = pt;
     if (!tmp)
@@ -1090,17 +1101,17 @@ void printParseTree_inorder_util(TreeNode *pt, FILE *fpt)
     if (tmp->tag == 0)
     {
         if (tmp->t.internalnode.rhs_size > 0)
-            printParseTree_inorder_util(tmp->t.internalnode.children[0], fpt);
-        printNode(tmp, fpt);
+            printParseTree_inorder_util(tmp->t.internalnode.children[0]);
+        printNode(tmp);
         for (int i = 1; i < tmp->t.internalnode.rhs_size; i++)
         {
             //  printf("%d\n",tmp->t.internalnode.rhs_size);
-            printParseTree_inorder_util(tmp->t.internalnode.children[i], fpt);
+            printParseTree_inorder_util(tmp->t.internalnode.children[i]);
         }
     }
     else
     {
-        printNode(tmp, fpt);
+        printNode(tmp);
         // printf("\n");
     }
 }
